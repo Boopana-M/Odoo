@@ -9,6 +9,8 @@ import employeeRoutes from './modules/employees/employee.routes';
 import contractRoutes from './modules/contracts/contract.routes';
 import scheduleRoutes from './modules/schedules/schedule.routes';
 import attendanceRoutes from './modules/attendance/attendance.routes';
+import timeOffTypeRoutes from './modules/timeoff/type/timeoff-type.routes';
+import timeOffAllocationRoutes from './modules/timeoff/allocation/timeoff-allocation.routes';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -27,6 +29,14 @@ app.use('/api/contracts', contractRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/attendances', attendanceRoutes);
+
+// Time Off Types
+app.use('/api/time-off/types', timeOffTypeRoutes);
+app.use('/api/timeoff/types', timeOffTypeRoutes);
+
+// Time Off Allocations
+app.use('/api/time-off/allocations', timeOffAllocationRoutes);
+app.use('/api/timeoff/allocations', timeOffAllocationRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
