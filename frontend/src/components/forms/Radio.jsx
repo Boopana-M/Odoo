@@ -1,8 +1,7 @@
 import React from 'react';
-import './Form.css';
 
 /**
- * Reusable Radio Component
+ * Reusable Radio Component with Tailwind CSS
  */
 export function Radio({
   id,
@@ -20,7 +19,9 @@ export function Radio({
   return (
     <label
       htmlFor={id}
-      className={`form-check ${disabled ? 'form-check--disabled' : ''} ${className}`.trim()}
+      className={`inline-flex items-start gap-2.5 cursor-pointer select-none text-sm text-slate-900 ${
+        disabled ? 'cursor-not-allowed opacity-60' : ''
+      } ${className}`.trim()}
     >
       <input
         id={id}
@@ -31,13 +32,13 @@ export function Radio({
         defaultChecked={defaultChecked}
         disabled={disabled}
         onChange={onChange}
-        className="form-check-input form-check-input--radio"
+        className="w-4 h-4 mt-0.5 rounded-full border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-600/30 focus:ring-offset-0 shrink-0 cursor-pointer disabled:cursor-not-allowed"
         {...props}
       />
       {(label || description) && (
-        <span className="form-check__label-content">
-          {label && <span className="form-check__label">{label}</span>}
-          {description && <span className="form-check__description">{description}</span>}
+        <span className="flex flex-col">
+          {label && <span className="font-medium text-slate-800">{label}</span>}
+          {description && <span className="text-xs text-slate-500 mt-0.5">{description}</span>}
         </span>
       )}
     </label>

@@ -1,9 +1,8 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import './PageHeader.css';
 
 /**
- * Reusable PageHeader Component
+ * Reusable PageHeader Component with Tailwind CSS
  * Supports: title, description, primary actions, secondary actions, breadcrumbs
  */
 export function PageHeader({
@@ -15,20 +14,20 @@ export function PageHeader({
   className = '',
 }) {
   return (
-    <header className={`page-header ${className}`.trim()}>
+    <header className={`flex flex-col gap-2 mb-6 ${className}`.trim()}>
       {breadcrumbs.length > 0 && (
-        <nav aria-label="Breadcrumb" className="page-header__breadcrumbs">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500">
           {breadcrumbs.map((crumb, idx) => (
             <React.Fragment key={idx}>
               {idx > 0 && (
-                <ChevronRight size={12} className="page-header__breadcrumb-separator" />
+                <ChevronRight size={12} className="text-slate-400 shrink-0" />
               )}
               {idx === breadcrumbs.length - 1 ? (
-                <span className="page-header__breadcrumb-item page-header__breadcrumb-item--active" aria-current="page">
+                <span className="text-slate-900 font-medium" aria-current="page">
                   {crumb.label}
                 </span>
               ) : (
-                <span className="page-header__breadcrumb-item">
+                <span className="text-slate-500 hover:text-slate-700">
                   {crumb.label}
                 </span>
               )}
@@ -37,14 +36,14 @@ export function PageHeader({
         </nav>
       )}
 
-      <div className="page-header__main">
-        <div className="page-header__content">
-          <h1 className="page-header__title">{title}</h1>
-          {description && <p className="page-header__description">{description}</p>}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex-1 min-w-[240px]">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-tight">{title}</h1>
+          {description && <p className="text-sm text-slate-600 mt-1 leading-normal">{description}</p>}
         </div>
 
         {(primaryAction || secondaryAction) && (
-          <div className="page-header__actions">
+          <div className="flex items-center gap-3 shrink-0 flex-wrap">
             {secondaryAction}
             {primaryAction}
           </div>

@@ -1,19 +1,20 @@
 import React from 'react';
-import './Table.css';
 
 /**
- * Reusable TableHeader Component
+ * Reusable TableHeader Component with Tailwind CSS
  */
 export function TableHeader({ columns = [], children, className = '' }) {
   return (
-    <thead className={`table-head ${className}`.trim()}>
+    <thead className={`bg-slate-50 border-b border-slate-200 ${className}`.trim()}>
       <tr>
         {columns.length > 0
           ? columns.map((col, idx) => (
               <th
                 key={col.key || idx}
                 scope="col"
-                className={`table-th ${col.align === 'right' ? 'text-right' : ''} ${col.className || ''}`.trim()}
+                className={`px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap ${
+                  col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                } ${col.className || ''}`.trim()}
                 style={col.width ? { width: col.width } : undefined}
               >
                 {col.label}

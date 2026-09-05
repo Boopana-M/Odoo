@@ -1,14 +1,13 @@
 import React from 'react';
 import { TableCell } from './TableCell';
-import './Table.css';
 
 /**
- * Reusable ActionCell Component for tables (aligns right)
+ * Reusable ActionCell Component for tables with Tailwind CSS
  */
 export function ActionCell({ children, className = '' }) {
   return (
     <TableCell align="right" className={className}>
-      <div className="action-cell">{children}</div>
+      <div className="flex items-center justify-end gap-1">{children}</div>
     </TableCell>
   );
 }

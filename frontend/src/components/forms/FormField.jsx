@@ -1,11 +1,9 @@
 import React from 'react';
 import { FormLabel } from './FormLabel';
 import { FormError } from './FormError';
-import './Form.css';
 
 /**
- * Reusable FormField wrapper component
- * Connects label, input, helper text, and error messages with proper accessibility attributes
+ * Reusable FormField wrapper component with Tailwind CSS
  */
 export function FormField({
   label,
@@ -21,7 +19,7 @@ export function FormField({
   const helperId = htmlFor && helperText ? `${htmlFor}-helper` : undefined;
 
   return (
-    <div className={`form-field ${className}`.trim()}>
+    <div className={`flex flex-col gap-0.5 mb-4 w-full ${className}`.trim()}>
       {label && (
         <FormLabel htmlFor={htmlFor} required={required} optional={optional}>
           {label}
@@ -31,7 +29,7 @@ export function FormField({
       {children}
 
       {helperText && !error && (
-        <p id={helperId} className="form-helper-text">
+        <p id={helperId} className="text-xs text-slate-500 mt-1">
           {helperText}
         </p>
       )}

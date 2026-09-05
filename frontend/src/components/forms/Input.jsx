@@ -1,8 +1,7 @@
 import React from 'react';
-import './Form.css';
 
 /**
- * Reusable Input Component
+ * Reusable Input Component with Tailwind CSS
  * Supports: text, email, password, number, search, tel, url, etc.
  * Features: leftIcon, rightIcon, error state, disabled state
  */
@@ -29,15 +28,14 @@ export function Input({
   const hasLeftIcon = Boolean(leftIcon);
   const hasRightIcon = Boolean(rightIcon);
 
-  const inputClasses = [
-    'form-input',
-    isError ? 'form-input--error' : '',
-    hasLeftIcon ? 'form-input--has-left-icon' : '',
-    hasRightIcon ? 'form-input--has-right-icon' : '',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const baseInputClasses =
+    'w-full h-[38px] px-3 py-2 text-sm text-slate-900 bg-white border rounded-md transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed disabled:border-slate-200';
+
+  const stateClasses = isError
+    ? 'border-red-500 focus:border-red-600 focus:ring-red-500/20'
+    : 'border-slate-300 focus:border-blue-600 focus:ring-blue-600/20';
+
+  const paddingClasses = `${hasLeftIcon ? 'pl-9' : ''} ${hasRightIcon ? 'pr-9' : ''}`;
 
   const inputElement = (
     <input
@@ -54,17 +52,25 @@ export function Input({
       onChange={onChange}
       onBlur={onBlur}
       onFocus={onFocus}
-      className={inputClasses}
+      className={`${baseInputClasses} ${stateClasses} ${paddingClasses} ${className}`.trim()}
       {...props}
     />
   );
 
   if (hasLeftIcon || hasRightIcon) {
     return (
-      <div className="form-input-wrapper">
-        {hasLeftIcon && <div className="form-input-icon form-input-icon--left">{leftIcon}</div>}
+      <div className="relative flex items-center w-full">
+        {hasLeftIcon && (
+          <div className="absolute left-3 flex items-center justify-center text-slate-400 pointer-events-none">
+            {leftIcon}
+          </div>
+        )}
         {inputElement}
-        {hasRightIcon && <div className="form-input-icon form-input-icon--right">{rightIcon}</div>}
+        {hasRightIcon && (
+          <div className="absolute right-3 flex items-center justify-center text-slate-400 pointer-events-none">
+            {rightIcon}
+          </div>
+        )}
       </div>
     );
   }
