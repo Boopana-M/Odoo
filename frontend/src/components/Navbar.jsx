@@ -61,7 +61,7 @@ export function Navbar() {
     <header className="navbar" ref={menuRef}>
       <div className="nav-left">
         <Link to={isEmployeeOnly ? "/employees/me" : "/dashboard"} className="brand-logo">
-          <div style={{ background: '#4f46e5', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}>
+          <div style={{ background: 'var(--primary)', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', boxShadow: '0 2px 6px rgba(113, 75, 103, 0.4)' }}>
             <Layers size={18} color="white" />
           </div>
           <span>PeoplePay360</span>

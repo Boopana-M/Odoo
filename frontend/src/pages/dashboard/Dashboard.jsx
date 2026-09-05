@@ -111,8 +111,9 @@ export function Dashboard() {
       {
         label: 'Net Salary Expenditure (₹)',
         data: deptSalaries.length > 0 ? deptSalaries : [0],
-        backgroundColor: '#4f46e5',
-        borderRadius: 6
+        backgroundColor: '#8a75bd',
+        hoverBackgroundColor: '#a18ecc',
+        borderRadius: 8
       }
     ]
   };
@@ -127,10 +128,13 @@ export function Dashboard() {
       {
         label: 'Net Salary Paid (₹)',
         data: trendValues.length > 0 ? trendValues : [summary.totalNetSalaryPaid || summary.totalNetSalary || 0],
-        borderColor: '#0284c7',
-        backgroundColor: 'rgba(2, 132, 199, 0.1)',
+        borderColor: '#00d2c4',
+        backgroundColor: 'rgba(0, 210, 196, 0.15)',
+        pointBackgroundColor: '#00d2c4',
+        pointBorderColor: '#ffffff',
+        pointRadius: 4,
         fill: true,
-        tension: 0.3
+        tension: 0.35
       }
     ]
   };
@@ -141,19 +145,21 @@ export function Dashboard() {
     plugins: {
       legend: {
         position: 'top',
-        labels: { boxWidth: 12, font: { size: 12 } }
+        labels: { boxWidth: 12, font: { size: 12 }, color: '#9ca3af' }
       }
     },
     scales: {
       y: {
         beginAtZero: true,
-        grid: { color: '#f1f5f9' },
+        grid: { color: 'rgba(255, 255, 255, 0.06)' },
         ticks: {
+          color: '#9ca3af',
           callback: (value) => `₹${value.toLocaleString()}`
         }
       },
       x: {
-        grid: { display: false }
+        grid: { display: false },
+        ticks: { color: '#9ca3af' }
       }
     }
   };
@@ -251,7 +257,7 @@ export function Dashboard() {
       <div className="kpi-grid">
         <div className="kpi-card">
           <div className="kpi-title">Total Net Salary Paid</div>
-          <div className="kpi-value" style={{ color: 'var(--primary)' }}>
+          <div className="kpi-value" style={{ color: '#c084fc' }}>
             ₹{Number(summary.totalNetSalaryPaid || summary.totalNetSalary || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </div>
           <div className="kpi-subtext">
@@ -261,7 +267,7 @@ export function Dashboard() {
 
         <div className="kpi-card">
           <div className="kpi-title">Payslips Generated</div>
-          <div className="kpi-value">
+          <div className="kpi-value" style={{ color: '#f9fafb' }}>
             {summary.payslipsGenerated ?? summary.totalPayslips ?? 0}
           </div>
           <div className="kpi-subtext" style={{ color: 'var(--success-text)' }}>
@@ -271,7 +277,7 @@ export function Dashboard() {
 
         <div className="kpi-card">
           <div className="kpi-title">Average Salary / Employee</div>
-          <div className="kpi-value">
+          <div className="kpi-value" style={{ color: '#f9fafb' }}>
             ₹{Number(summary.averageSalary ?? summary.avgSalary ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </div>
           <div className="kpi-subtext">Across active contracts</div>
@@ -279,7 +285,7 @@ export function Dashboard() {
 
         <div className="kpi-card">
           <div className="kpi-title">Approved Time Off</div>
-          <div className="kpi-value" style={{ color: 'var(--info)' }}>
+          <div className="kpi-value" style={{ color: '#67e8f9' }}>
             {attTimeOff.approvedTimeOffDays ?? attTimeOff.timeOff?.approvedDays ?? summary.approvedTimeOffDays ?? 0} Days
           </div>
           <div className="kpi-subtext">
@@ -289,7 +295,7 @@ export function Dashboard() {
 
         <div className="kpi-card">
           <div className="kpi-title">Attendance Health</div>
-          <div className="kpi-value" style={{ color: 'var(--success-text)' }}>
+          <div className="kpi-value" style={{ color: '#34d399' }}>
             {attTimeOff.attendanceHealth ?? attTimeOff.attendance?.attendanceRate ?? summary.attendanceHealth ?? 100}%
           </div>
           <div className="kpi-subtext">Present vs Expected shifts</div>
@@ -363,7 +369,7 @@ export function Dashboard() {
             <h3 className="card-title">Attendance & Time Off Health Overview</h3>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-            <div className="card" style={{ background: '#f8fafc', margin: 0, padding: '1rem' }}>
+            <div className="card" style={{ background: 'var(--bg-subtle)', margin: 0, padding: '1rem' }}>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
                 Present Records
               </div>
@@ -375,7 +381,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="card" style={{ background: '#f8fafc', margin: 0, padding: '1rem' }}>
+            <div className="card" style={{ background: 'var(--bg-subtle)', margin: 0, padding: '1rem' }}>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
                 Exceptions / Absences
               </div>
@@ -387,11 +393,11 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="card" style={{ background: '#f8fafc', margin: 0, padding: '1rem' }}>
+            <div className="card" style={{ background: 'var(--bg-subtle)', margin: 0, padding: '1rem' }}>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
                 Overtime Logged
               </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)', marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-text)', marginTop: '0.25rem' }}>
                 {attTimeOff.overtimeHours ?? attTimeOff.attendance?.overtimeHours ?? 0} hrs
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -399,11 +405,11 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="card" style={{ background: '#f8fafc', margin: 0, padding: '1rem' }}>
+            <div className="card" style={{ background: 'var(--bg-subtle)', margin: 0, padding: '1rem' }}>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
                 Leave Requests
               </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--info)', marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--info-text)', marginTop: '0.25rem' }}>
                 {attTimeOff.pendingTimeOffRequests ?? attTimeOff.timeOff?.pendingCount ?? 0}
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>

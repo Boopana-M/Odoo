@@ -113,7 +113,7 @@ export function EmployeeList() {
         <div className="page-actions">
           {/* View Mode Switcher */}
           {!isEmployeeOnly && (
-            <div style={{ display: 'flex', background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
+            <div style={{ display: 'flex', background: 'var(--bg-subtle)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
               <button
                 type="button"
                 className={`btn btn-sm ${viewMode === 'kanban' ? 'btn-primary' : 'btn-secondary'}`}
