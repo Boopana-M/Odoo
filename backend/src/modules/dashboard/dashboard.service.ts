@@ -91,6 +91,16 @@ export class DashboardService {
             $sum: {
               $cond: [{ $eq: ['$status', 'Paid'] }, 1, 0]
             }
+          },
+          validatedPayslipsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'Validated'] }, 1, 0]
+            }
+          },
+          draftPayslipsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'Draft'] }, 1, 0]
+            }
           }
         }
       }
@@ -104,7 +114,9 @@ export class DashboardService {
       totalDeductions: 0,
       totalPayslips: 0,
       totalNetSalaryPaid: 0,
-      paidPayslipsCount: 0
+      paidPayslipsCount: 0,
+      validatedPayslipsCount: 0,
+      draftPayslipsCount: 0
     };
 
     const averageSalary =
@@ -131,8 +143,15 @@ export class DashboardService {
       totalAllowances: Math.round((stats.totalAllowances + Number.EPSILON) * 100) / 100,
       totalDeductions: Math.round((stats.totalDeductions + Number.EPSILON) * 100) / 100,
       payslipsGenerated: stats.totalPayslips,
+      totalPayslips: stats.totalPayslips,
+      paidPayslips: stats.paidPayslipsCount,
       paidPayslipsCount: stats.paidPayslipsCount,
+      validatedPayslips: stats.validatedPayslipsCount,
+      validatedPayslipsCount: stats.validatedPayslipsCount,
+      draftPayslips: stats.draftPayslipsCount,
+      draftPayslipsCount: stats.draftPayslipsCount,
       averageSalary,
+      avgSalary: averageSalary,
       activeEmployeesCount,
       totalDepartmentsCount
     };
@@ -353,6 +372,46 @@ export class DashboardService {
           absentCount: {
             $sum: { $cond: [{ $eq: ['$status', 'Absent'] }, 1, 0] }
           },
+          halfDayCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'Half Day'] }, 1, 0] }
+          },
+          missingCheckoutCount: {
+            $sum: {
+              $cond: [
+                {
+                  $or: [
+                    { $eq: ['$status', 'Missing check-out'] },
+                    { $eq: [{ $ifNull: ['$checkOut', null] }, null] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          manualEditCount: {
+            $sum: {
+              $cond: [
+                {
+                  $or: [
+                    { $eq: ['$isCorrected', true] },
+                    { $eq: ['$status', 'Manual edits'] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          overtimeHours: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'Overtime'] },
+                '$workedHours',
+                0
+              ]
+            }
+          },
           totalWorkedHours: { $sum: '$workedHours' }
         }
       }
@@ -364,11 +423,15 @@ export class DashboardService {
       overtimeCount: 0,
       lateCount: 0,
       absentCount: 0,
+      halfDayCount: 0,
+      missingCheckoutCount: 0,
+      manualEditCount: 0,
+      overtimeHours: 0,
       totalWorkedHours: 0
     };
 
     const productiveRecords =
-      attStats.presentCount + attStats.overtimeCount + attStats.lateCount;
+      attStats.presentCount + attStats.overtimeCount + attStats.lateCount + (attStats.halfDayCount || 0);
     const attendanceRate =
       attStats.totalRecords > 0
         ? Math.round(((productiveRecords / attStats.totalRecords) * 100 + Number.EPSILON) * 100) / 100
@@ -404,6 +467,11 @@ export class DashboardService {
             $sum: {
               $cond: [{ $eq: ['$status', 'Approved'] }, '$duration', 0]
             }
+          },
+          pendingDays: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'Pending'] }, '$duration', 0]
+            }
           }
         }
       }
@@ -414,17 +482,37 @@ export class DashboardService {
       approvedCount: 0,
       pendingCount: 0,
       refusedCount: 0,
-      approvedDays: 0
+      approvedDays: 0,
+      pendingDays: 0
     };
 
+    const roundedApprovedDays = Math.round((timeOffStats.approvedDays + Number.EPSILON) * 100) / 100;
+    const roundedOvertimeHours = Math.round((attStats.overtimeHours + Number.EPSILON) * 100) / 100;
+    const roundedWorkedHours = Math.round((attStats.totalWorkedHours + Number.EPSILON) * 100) / 100;
+
     return {
+      attendanceHealth: attendanceRate,
+      approvedTimeOffDays: roundedApprovedDays,
+      pendingTimeOffRequests: timeOffStats.pendingCount,
+      presentCount: attStats.presentCount,
+      lateCount: attStats.lateCount,
+      absentCount: attStats.absentCount,
+      halfDayCount: attStats.halfDayCount || 0,
+      missingCheckoutCount: attStats.missingCheckoutCount || 0,
+      manualEditCount: attStats.manualEditCount || 0,
+      overtimeHours: roundedOvertimeHours,
+      totalWorkedHours: roundedWorkedHours,
       attendance: {
         totalRecords: attStats.totalRecords,
         presentCount: attStats.presentCount,
         overtimeCount: attStats.overtimeCount,
         lateCount: attStats.lateCount,
         absentCount: attStats.absentCount,
-        totalWorkedHours: Math.round((attStats.totalWorkedHours + Number.EPSILON) * 100) / 100,
+        halfDayCount: attStats.halfDayCount || 0,
+        missingCheckoutCount: attStats.missingCheckoutCount || 0,
+        manualEditCount: attStats.manualEditCount || 0,
+        overtimeHours: roundedOvertimeHours,
+        totalWorkedHours: roundedWorkedHours,
         attendanceRate
       },
       timeOff: {
@@ -432,7 +520,8 @@ export class DashboardService {
         approvedCount: timeOffStats.approvedCount,
         pendingCount: timeOffStats.pendingCount,
         refusedCount: timeOffStats.refusedCount,
-        approvedDays: timeOffStats.approvedDays
+        approvedDays: roundedApprovedDays,
+        pendingDays: Math.round((timeOffStats.pendingDays + Number.EPSILON) * 100) / 100
       }
     };
   }
