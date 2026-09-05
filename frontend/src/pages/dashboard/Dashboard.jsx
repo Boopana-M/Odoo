@@ -109,7 +109,7 @@ export function Dashboard() {
     labels: deptLabels.length > 0 ? deptLabels : ['No Data'],
     datasets: [
       {
-        label: 'Net Salary Expenditure ($)',
+        label: 'Net Salary Expenditure (₹)',
         data: deptSalaries.length > 0 ? deptSalaries : [0],
         backgroundColor: '#4f46e5',
         borderRadius: 6
@@ -125,7 +125,7 @@ export function Dashboard() {
     labels: trendLabels.length > 0 ? trendLabels : ['Current Period'],
     datasets: [
       {
-        label: 'Net Salary Paid ($)',
+        label: 'Net Salary Paid (₹)',
         data: trendValues.length > 0 ? trendValues : [summary.totalNetSalaryPaid || summary.totalNetSalary || 0],
         borderColor: '#0284c7',
         backgroundColor: 'rgba(2, 132, 199, 0.1)',
@@ -149,7 +149,7 @@ export function Dashboard() {
         beginAtZero: true,
         grid: { color: '#f1f5f9' },
         ticks: {
-          callback: (value) => `$${value.toLocaleString()}`
+          callback: (value) => `₹${value.toLocaleString()}`
         }
       },
       x: {
@@ -252,10 +252,10 @@ export function Dashboard() {
         <div className="kpi-card">
           <div className="kpi-title">Total Net Salary Paid</div>
           <div className="kpi-value" style={{ color: 'var(--primary)' }}>
-            ${Number(summary.totalNetSalaryPaid || summary.totalNetSalary || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            ₹{Number(summary.totalNetSalaryPaid || summary.totalNetSalary || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </div>
           <div className="kpi-subtext">
-            Gross Total: ${Number(summary.totalGrossSalary || 0).toLocaleString()}
+            Gross Total: ₹{Number(summary.totalGrossSalary || 0).toLocaleString()}
           </div>
         </div>
 
@@ -272,7 +272,7 @@ export function Dashboard() {
         <div className="kpi-card">
           <div className="kpi-title">Average Salary / Employee</div>
           <div className="kpi-value">
-            ${Number(summary.averageSalary ?? summary.avgSalary ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            ₹{Number(summary.averageSalary ?? summary.avgSalary ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </div>
           <div className="kpi-subtext">Across active contracts</div>
         </div>
@@ -347,7 +347,7 @@ export function Dashboard() {
                         </span>
                       </td>
                       <td style={{ textAlign: 'right', fontWeight: 700 }}>
-                        ${Number(deptSpend).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        ₹{Number(deptSpend).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
                   );

@@ -159,12 +159,12 @@ export function PayslipList() {
                     </span>
                   </td>
                   <td>{p.workedDays || 0}</td>
-                  <td>${Number(p.basic || 0).toLocaleString()}</td>
-                  <td style={{ color: 'var(--success-text)' }}>+${Number(p.allowances || 0).toLocaleString()}</td>
-                  <td style={{ fontWeight: 600 }}>${Number(p.gross || 0).toLocaleString()}</td>
-                  <td style={{ color: 'var(--danger-text)' }}>-${Number(p.deductions || 0).toLocaleString()}</td>
+                  <td>₹{Number(p.basic || 0).toLocaleString()}</td>
+                  <td style={{ color: 'var(--success-text)' }}>+₹{Number(p.allowances || 0).toLocaleString()}</td>
+                  <td style={{ fontWeight: 600 }}>₹{Number(p.gross || 0).toLocaleString()}</td>
+                  <td style={{ color: 'var(--danger-text)' }}>-₹{Number(p.deductions || 0).toLocaleString()}</td>
                   <td style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.95rem' }}>
-                    ${Number(p.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ₹{Number(p.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                   <td>
                     <StatusBadge status={p.status} />

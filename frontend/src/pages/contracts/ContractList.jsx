@@ -190,7 +190,7 @@ export function ContractList() {
                 <td>{new Date(c.startDate).toLocaleDateString()}</td>
                 <td>{c.endDate ? new Date(c.endDate).toLocaleDateString() : 'Indefinite'}</td>
                 <td style={{ fontWeight: 700 }}>
-                  ${Number(c.wage).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  ₹{Number(c.wage).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </td>
                 <td>
                   <span className="badge badge-neutral">
@@ -256,7 +256,7 @@ export function ContractList() {
           </div>
 
           <div className="form-group">
-            <label className="form-label required">Monthly Wage ($)</label>
+            <label className="form-label required">Monthly Wage (₹)</label>
             <input
               type="number"
               step="0.01"

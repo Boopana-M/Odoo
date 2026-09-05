@@ -246,7 +246,7 @@ export function PayrunDetail() {
           <div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Net Salary Batch</div>
             <div style={{ fontWeight: 800, fontSize: '1.4rem', color: 'var(--primary)', marginTop: '0.2rem' }}>
-              ${totalNet.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ₹{totalNet.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </div>
           </div>
         </div>
@@ -324,12 +324,12 @@ export function PayrunDetail() {
                       </div>
                     </td>
                     <td>{p.workedDays || 0} days</td>
-                    <td>${Number(p.basic || 0).toLocaleString()}</td>
-                    <td style={{ color: 'var(--success-text)' }}>+${Number(p.allowances || 0).toLocaleString()}</td>
-                    <td style={{ fontWeight: 600 }}>${Number(p.gross || 0).toLocaleString()}</td>
-                    <td style={{ color: 'var(--danger-text)' }}>-${Number(p.deductions || 0).toLocaleString()}</td>
+                    <td>₹{Number(p.basic || 0).toLocaleString()}</td>
+                    <td style={{ color: 'var(--success-text)' }}>+₹{Number(p.allowances || 0).toLocaleString()}</td>
+                    <td style={{ fontWeight: 600 }}>₹{Number(p.gross || 0).toLocaleString()}</td>
+                    <td style={{ color: 'var(--danger-text)' }}>-₹{Number(p.deductions || 0).toLocaleString()}</td>
                     <td style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
-                      ${Number(p.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      ₹{Number(p.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
                     <td>
                       <StatusBadge status={p.status} />

@@ -144,14 +144,14 @@ export function ContractDetail() {
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Monthly Base Wage</div>
             <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary)' }}>
-              ${Number(formData.wage).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ₹{Number(formData.wage).toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </div>
           </div>
         </div>
 
         <form onSubmit={handleSave} className="form-grid">
           <div className="form-group">
-            <label className="form-label required">Monthly Wage ($)</label>
+            <label className="form-label required">Monthly Wage (₹)</label>
             <input
               type="number"
               step="0.01"

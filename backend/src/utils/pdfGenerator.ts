@@ -30,7 +30,7 @@ export function generatePayslipPdfBuffer(data: PayslipPdfInput): Buffer {
   };
 
   const formatCurr = (val: number = 0): string => {
-    return `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `Rs. ${val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const linesStream: string[] = [];

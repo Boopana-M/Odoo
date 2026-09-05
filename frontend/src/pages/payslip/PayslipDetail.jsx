@@ -197,7 +197,7 @@ export function PayslipDetail() {
             </div>
             {payslip.contractId && (
               <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                Contract Base Wage: <strong>${Number(payslip.contractId?.wage || 0).toLocaleString()}</strong>
+                Contract Base Wage: <strong>₹{Number(payslip.contractId?.wage || 0).toLocaleString()}</strong>
               </div>
             )}
           </div>
@@ -207,27 +207,27 @@ export function PayslipDetail() {
         <div className="kpi-grid" style={{ marginBottom: '2rem' }}>
           <div className="kpi-card" style={{ background: '#f8fafc' }}>
             <div className="kpi-title">Basic Salary</div>
-            <div className="kpi-value">${Number(payslip.basic || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+            <div className="kpi-value">₹{Number(payslip.basic || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
           </div>
 
           <div className="kpi-card" style={{ background: '#f0fdf4' }}>
             <div className="kpi-title" style={{ color: '#15803d' }}>Total Allowances</div>
-            <div className="kpi-value" style={{ color: '#15803d' }}>+${Number(payslip.allowances || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+            <div className="kpi-value" style={{ color: '#15803d' }}>+₹{Number(payslip.allowances || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
           </div>
 
           <div className="kpi-card" style={{ background: '#f8fafc' }}>
             <div className="kpi-title">Gross Salary</div>
-            <div className="kpi-value">${Number(payslip.gross || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+            <div className="kpi-value">₹{Number(payslip.gross || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
           </div>
 
           <div className="kpi-card" style={{ background: '#fef2f2' }}>
             <div className="kpi-title" style={{ color: '#b91c1c' }}>Total Deductions</div>
-            <div className="kpi-value" style={{ color: '#b91c1c' }}>-${Number(payslip.deductions || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+            <div className="kpi-value" style={{ color: '#b91c1c' }}>-₹{Number(payslip.deductions || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
           </div>
 
           <div className="kpi-card" style={{ background: '#eef2ff', borderColor: '#c7d2fe' }}>
             <div className="kpi-title" style={{ color: '#3730a3' }}>Final Net Pay</div>
-            <div className="kpi-value" style={{ color: '#3730a3' }}>${Number(payslip.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+            <div className="kpi-value" style={{ color: '#3730a3' }}>₹{Number(payslip.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
           </div>
         </div>
 
@@ -274,7 +274,7 @@ export function PayslipDetail() {
                         </span>
                       </td>
                       <td style={{ textAlign: 'right', fontWeight: 700, fontSize: '0.95rem' }}>
-                        {line.category === 'Deductions' ? '-' : ''}${Number(line.calculatedAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        {line.category === 'Deductions' ? '-' : ''}₹{Number(line.calculatedAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
                   ))
@@ -291,7 +291,7 @@ export function PayslipDetail() {
                   <tr style={{ background: '#f8fafc', fontWeight: 800 }}>
                     <td colSpan="4" style={{ textAlign: 'right', fontSize: '1rem' }}>NET SALARY DISBURSEMENT:</td>
                     <td style={{ textAlign: 'right', fontSize: '1.2rem', color: 'var(--primary)' }}>
-                      ${Number(payslip.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      ₹{Number(payslip.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
                   </tr>
                 </tfoot>

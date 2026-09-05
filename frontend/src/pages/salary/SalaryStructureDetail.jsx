@@ -217,7 +217,7 @@ export function SalaryStructureDetail() {
                     <span className="badge badge-neutral">{r.computationMethod}</span>
                   </td>
                   <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>
-                    {r.computationMethod === 'Fixed' && `$${r.amount}`}
+                    {r.computationMethod === 'Fixed' && `₹${r.amount}`}
                     {r.computationMethod === 'Percentage' && `${r.percentage}% of Base`}
                     {r.computationMethod === 'Formula' && (r.formulaExpression || '-')}
                   </td>
@@ -310,14 +310,14 @@ export function SalaryStructureDetail() {
               required
             >
               <option value="Percentage">Percentage (% of Contract Wage or previous rule)</option>
-              <option value="Fixed">Fixed (Specific dollar amount)</option>
+              <option value="Fixed">Fixed (Specific rupee amount)</option>
               <option value="Formula">Formula (Arithmetic expression e.g. BASIC + HRA)</option>
             </select>
           </div>
 
           {newRule.computationMethod === 'Fixed' && (
             <div className="form-group full-width">
-              <label className="form-label required">Fixed Amount ($)</label>
+              <label className="form-label required">Fixed Amount (₹)</label>
               <input
                 type="number"
                 step="0.01"

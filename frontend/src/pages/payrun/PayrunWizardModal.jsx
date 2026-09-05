@@ -286,9 +286,9 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
                       <td>{emp.department?.name || emp.departmentId?.name || (typeof emp.department === 'string' ? emp.department : '-')}</td>
                       <td style={{ fontWeight: 700, color: 'var(--primary)' }}>
                         {emp.contract?.wage
-                          ? `$${Number(emp.contract.wage).toLocaleString()}`
+                          ? `₹${Number(emp.contract.wage).toLocaleString()}`
                           : emp.applicableContract?.wage
-                          ? `$${Number(emp.applicableContract.wage).toLocaleString()}`
+                          ? `₹${Number(emp.applicableContract.wage).toLocaleString()}`
                           : 'Wage on file'}
                       </td>
                     </tr>
