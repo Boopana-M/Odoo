@@ -11,6 +11,10 @@ import { WorkingSchedulesPage } from './pages/WorkingSchedulesPage';
 import { ContractsPage } from './pages/ContractsPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { TimeOffPage } from './pages/TimeOffPage';
+import { SalaryStructuresPage } from './pages/SalaryStructuresPage';
+import { SalaryRulesPage } from './pages/SalaryRulesPage';
+import { PayrunsPage } from './pages/PayrunsPage';
+import { PayslipsPage } from './pages/PayslipsPage';
 
 /**
  * Authenticated Core Application Router
@@ -22,6 +26,8 @@ function MainRouter() {
   const [contractEmployeeFilter, setContractEmployeeFilter] = useState(null);
   const [attendanceEmployeeFilter, setAttendanceEmployeeFilter] = useState(null);
   const [timeOffEmployeeFilter, setTimeOffEmployeeFilter] = useState(null);
+  const [salaryStructureRuleFilter, setSalaryStructureRuleFilter] = useState(null);
+  const [payslipEmployeeFilter, setPayslipEmployeeFilter] = useState(null);
 
   // Determine role-permitted navigation sections
   const sidebarSections = getNavigationForRole(role);
@@ -100,6 +106,35 @@ function MainRouter() {
         />
       );
     }
+    if (activeNavItem === 'salary-structures') {
+      return (
+        <SalaryStructuresPage
+          onNavigateToRules={(structId) => {
+            setSalaryStructureRuleFilter(structId);
+            setSelectedNavItem('salary-rules');
+          }}
+        />
+      );
+    }
+    if (activeNavItem === 'salary-rules') {
+      return (
+        <SalaryRulesPage
+          key={salaryStructureRuleFilter || 'all'}
+          initialStructureFilter={salaryStructureRuleFilter}
+        />
+      );
+    }
+    if (activeNavItem === 'payruns') {
+      return <PayrunsPage />;
+    }
+    if (activeNavItem === 'payslips') {
+      return (
+        <PayslipsPage
+          key={payslipEmployeeFilter || 'all'}
+          initialEmployeeFilter={payslipEmployeeFilter}
+        />
+      );
+    }
     return <RoleLanding activeNavItem={activeNavItem} />;
   };
 
@@ -120,6 +155,12 @@ function MainRouter() {
         }
         if (itemId !== 'time-off') {
           setTimeOffEmployeeFilter(null);
+        }
+        if (itemId !== 'salary-rules') {
+          setSalaryStructureRuleFilter(null);
+        }
+        if (itemId !== 'payslips') {
+          setPayslipEmployeeFilter(null);
         }
         setSelectedNavItem(itemId);
       }}
