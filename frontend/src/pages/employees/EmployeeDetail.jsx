@@ -12,7 +12,9 @@ import {
   Edit2,
   Save,
   X,
-  Plus
+  Plus,
+  DollarSign,
+  Download
 } from 'lucide-react';
 import { employeeApi } from '../../api/employeeApi';
 import { departmentApi } from '../../api/departmentApi';
@@ -20,6 +22,7 @@ import { scheduleApi } from '../../api/scheduleApi';
 import { contractApi } from '../../api/contractApi';
 import { attendanceApi } from '../../api/attendanceApi';
 import { timeOffApi } from '../../api/timeOffApi';
+import { payslipApi } from '../../api/payslipApi';
 import SmartButton from '../../components/SmartButton';
 import StatusBadge from '../../components/StatusBadge';
 import { useAuth } from '../../context/AuthContext';
@@ -35,15 +38,17 @@ export function EmployeeDetail() {
   const [departments, setDepartments] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [allEmployees, setAllEmployees] = useState([]);
+  const [payslips, setPayslips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState('work'); // 'work' | 'bank' | 'activity'
+  const [activeTab, setActiveTab] = useState('work'); // 'work' | 'bank' | 'payslips'
 
   // Counts for smart buttons
   const [counts, setCounts] = useState({
     timeOff: 0,
     contracts: 0,
-    attendance: 0
+    attendance: 0,
+    payslips: 0
   });
 
   // Form State
@@ -71,38 +76,45 @@ export function EmployeeDetail() {
   const fetchEmployeeData = async () => {
     setLoading(true);
     try {
+      const empRes = await employeeApi.getById(id);
+      const emp = empRes.data;
+      if (!emp) throw new Error('Employee not found');
+      setEmployee(emp);
+
+      const realEmpId = emp._id;
+
       const promises = [
-        employeeApi.getById(id),
         departmentApi.getAll().catch(() => ({ data: [] })),
         scheduleApi.getAll().catch(() => ({ data: [] })),
-        attendanceApi.getAll({ employeeId: id }).catch(() => ({ data: [] })),
-        timeOffApi.getRequests({ employeeId: id }).catch(() => ({ data: [] }))
+        attendanceApi.getAll({ employeeId: realEmpId }).catch(() => ({ data: [] })),
+        timeOffApi.getRequests({ employeeId: realEmpId }).catch(() => ({ data: [] })),
+        payslipApi.getAll({ employeeId: realEmpId }).catch(() => ({ data: [] }))
       ];
 
       if (!isEmployeeOnly) {
         promises.push(employeeApi.getAll().catch(() => ({ data: [] })));
-        promises.push(contractApi.getAll({ employeeId: id }).catch(() => ({ data: [] })));
+        promises.push(contractApi.getAll({ employeeId: realEmpId }).catch(() => ({ data: [] })));
       }
 
       const results = await Promise.all(promises);
-      const empRes = results[0];
-      const deptRes = results[1];
-      const schedRes = results[2];
-      const attRes = results[3];
-      const timeOffRes = results[4];
+      const deptRes = results[0];
+      const schedRes = results[1];
+      const attRes = results[2];
+      const timeOffRes = results[3];
+      const payslipsRes = results[4];
       const allEmpRes = !isEmployeeOnly ? results[5] : { data: [] };
       const contractsRes = !isEmployeeOnly ? results[6] : { data: [] };
 
-      const emp = empRes.data;
-      setEmployee(emp);
       setDepartments(deptRes.data || []);
       setSchedules(schedRes.data || []);
+      setPayslips(payslipsRes.data || []);
       setAllEmployees(allEmpRes.data || []);
 
       setCounts({
         contracts: contractsRes.data?.length || 0,
         attendance: attRes.data?.length || 0,
-        timeOff: timeOffRes.data?.length || 0
+        timeOff: timeOffRes.data?.length || 0,
+        payslips: payslipsRes.data?.length || 0
       });
 
       setFormData({
@@ -129,6 +141,23 @@ export function EmployeeDetail() {
       error(err.message || 'Failed to load employee details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadPdf = async (payslipId, empName) => {
+    try {
+      const blob = await payslipApi.downloadPdf(payslipId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Payslip_${empName.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      success('Payslip downloaded successfully');
+    } catch (err) {
+      error('Failed to download PDF');
     }
   };
 
@@ -236,6 +265,12 @@ export function EmployeeDetail() {
           label="Attendance"
           onClick={() => navigate(isEmployeeOnly ? '/attendance' : `/attendance?employeeId=${employee._id}`)}
         />
+        <SmartButton
+          icon={DollarSign}
+          count={counts.payslips}
+          label="Payslips"
+          onClick={() => setActiveTab('payslips')}
+        />
       </div>
 
       {/* Profile Hub Card */}
@@ -285,6 +320,13 @@ export function EmployeeDetail() {
             onClick={() => setActiveTab('bank')}
           >
             <CreditCard size={16} /> Bank & Payment Details
+          </button>
+          <button
+            type="button"
+            className={`tab-btn ${activeTab === 'payslips' ? 'active' : ''}`}
+            onClick={() => setActiveTab('payslips')}
+          >
+            <DollarSign size={16} /> Payslips & Compensation ({counts.payslips})
           </button>
         </div>
 
@@ -525,6 +567,93 @@ export function EmployeeDetail() {
               />
             </div>
           </form>
+        )}
+
+        {/* Tab 3: Payslips & Compensation */}
+        {activeTab === 'payslips' && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Employee Payslip History ({payslips.length})</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Validated payroll runs, real-time earnings, and downloadable PDF payslips.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => navigate(isEmployeeOnly ? '/payroll/payslips' : `/payroll/payslips?employeeId=${employee._id}`)}
+              >
+                View in Directory →
+              </button>
+            </div>
+
+            {payslips.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2.5rem', background: 'var(--bg-subtle)', borderRadius: '8px', color: 'var(--text-muted)' }}>
+                <DollarSign size={32} style={{ opacity: 0.5, marginBottom: '0.5rem' }} />
+                <p style={{ fontWeight: 600 }}>No payslips generated yet for this employee.</p>
+                <p style={{ fontSize: '0.8rem' }}>When payroll is computed and validated, payslips will appear here in real time.</p>
+              </div>
+            ) : (
+              <div className="table-container" style={{ margin: 0 }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Pay Period</th>
+                      <th>Pay Run</th>
+                      <th>Worked</th>
+                      <th>Gross</th>
+                      <th>Deductions</th>
+                      <th>Net Salary</th>
+                      <th>Status</th>
+                      <th>Delivery</th>
+                      <th style={{ textAlign: 'right' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payslips.map((p) => {
+                      const periodStr = `${p.periodStart ? new Date(p.periodStart).toLocaleDateString() : ''} — ${p.periodEnd ? new Date(p.periodEnd).toLocaleDateString() : ''}`;
+                      return (
+                        <tr key={p._id}>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{periodStr}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              {p.salaryStructureId?.name || 'Standard Structure'}
+                            </div>
+                          </td>
+                          <td>{p.payrunId?.name || 'Standard Batch'}</td>
+                          <td>{p.workedDays || 0} days</td>
+                          <td>₹{Number(p.gross || 0).toLocaleString()}</td>
+                          <td style={{ color: 'var(--danger-text)' }}>-₹{Number(p.deductions || 0).toLocaleString()}</td>
+                          <td style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
+                            ₹{Number(p.net || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </td>
+                          <td>
+                            <StatusBadge status={p.status} />
+                          </td>
+                          <td>
+                            <span className={`badge ${p.emailStatus === 'Sent' ? 'badge-success' : 'badge-neutral'}`}>
+                              {p.emailStatus || 'Pending'}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => handleDownloadPdf(p._id, `${employee.firstName}_${employee.lastName}`)}
+                              title="Download PDF"
+                            >
+                              <Download size={14} /> PDF
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

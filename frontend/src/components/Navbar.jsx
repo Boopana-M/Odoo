@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AttendanceWidget from './AttendanceWidget';
+import NotificationBell from './NotificationBell';
 import ChangePasswordModal from './ChangePasswordModal';
 
 export function Navbar() {
@@ -221,6 +222,9 @@ export function Navbar() {
       </div>
 
       <div className="nav-right">
+        {/* Live Notification Bell */}
+        <NotificationBell />
+
         {/* Attendance Check-in Widget */}
         <AttendanceWidget />
 

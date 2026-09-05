@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FileText, Download, ArrowRight, Filter } from 'lucide-react';
+import { FileText, Download, ArrowRight, Filter, DollarSign, CheckCircle2, Clock } from 'lucide-react';
 import { payslipApi } from '../../api/payslipApi';
 import { employeeApi } from '../../api/employeeApi';
 import StatusBadge from '../../components/StatusBadge';
@@ -19,17 +19,18 @@ export function PayslipList() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [selectedEmp, setSelectedEmp] = useState(isEmployeeOnly ? user?.employeeId : employeeFilterParam);
+  const [selectedEmp, setSelectedEmp] = useState(isEmployeeOnly ? '' : employeeFilterParam);
   const [statusFilter, setStatusFilter] = useState('');
 
   const fetchPayslips = async () => {
     setLoading(true);
     try {
+      const params = {};
+      if (!isEmployeeOnly && selectedEmp) params.employeeId = selectedEmp;
+      if (statusFilter) params.status = statusFilter;
+
       const [payslipRes, empRes] = await Promise.all([
-        payslipApi.getAll({
-          employeeId: selectedEmp,
-          status: statusFilter
-        }),
+        payslipApi.getAll(params),
         isEmployeeOnly ? Promise.resolve({ data: [] }) : employeeApi.getAll()
       ]);
 
@@ -64,12 +65,50 @@ export function PayslipList() {
     }
   };
 
+  // Calculate live summary stats
+  const totalNet = payslips.reduce((sum, p) => sum + (p.net || 0), 0);
+  const paidCount = payslips.filter((p) => p.status === 'Paid').length;
+  const validatedCount = payslips.filter((p) => p.status === 'Validated').length;
+
   return (
     <div>
       <div className="page-header">
         <div className="page-title-area">
           <FileText size={24} color="var(--primary)" />
-          <h1 className="page-title">Payslips Directory</h1>
+          <h1 className="page-title">{isEmployeeOnly ? 'My Payslips & Compensation' : 'Payslips Directory'}</h1>
+        </div>
+      </div>
+
+      {/* Real-time Summary Card */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div className="card" style={{ margin: 0, padding: '1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Net Earnings</div>
+          <div style={{ fontWeight: 800, fontSize: '1.4rem', color: 'var(--primary)', marginTop: '0.2rem' }}>
+            ₹{totalNet.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+            Across {payslips.length} total generated payslip(s)
+          </div>
+        </div>
+
+        <div className="card" style={{ margin: 0, padding: '1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Paid & Disbursed</div>
+          <div style={{ fontWeight: 800, fontSize: '1.4rem', color: 'var(--success-text)', marginTop: '0.2rem' }}>
+            {paidCount} Payslips
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+            {validatedCount} currently in Validated stage
+          </div>
+        </div>
+
+        <div className="card" style={{ margin: 0, padding: '1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Latest Pay Period</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-main)', marginTop: '0.2rem' }}>
+            {payslips[0]?.periodStart ? `${new Date(payslips[0].periodStart).toLocaleDateString()} — ${new Date(payslips[0].periodEnd).toLocaleDateString()}` : 'No Records'}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+            {payslips[0]?.status ? `Status: ${payslips[0].status}` : 'Pending generation'}
+          </div>
         </div>
       </div>
 

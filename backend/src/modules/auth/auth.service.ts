@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { User, IUser, UserRole } from '../users/user.model';
+import { Employee } from '../employees/employee.model';
 
 export interface LoginInput {
   email: string;
@@ -68,6 +69,15 @@ export class AuthService {
       throw error;
     }
 
+    // Auto-link employeeId if not linked yet
+    if (!user.employeeId) {
+      const matchingEmp = await Employee.findOne({ email: user.email.toLowerCase() });
+      if (matchingEmp) {
+        user.employeeId = matchingEmp._id;
+        await user.save();
+      }
+    }
+
     const token = this.generateToken(user);
     return {
       token,
@@ -88,7 +98,27 @@ export class AuthService {
       error.statusCode = 404;
       throw error;
     }
-    return user;
+
+    // Auto-link employeeId if missing
+    if (!user.employeeId) {
+      const matchingEmp = await Employee.findOne({ email: user.email.toLowerCase() });
+      if (matchingEmp) {
+        user.employeeId = matchingEmp._id;
+        await user.save();
+      }
+    }
+
+    return {
+      id: user._id.toString(),
+      _id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      employeeId: user.employeeId ? user.employeeId.toString() : null,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
   }
 
   async changePassword(userId: string, input: ChangePasswordInput): Promise<{ message: string }> {

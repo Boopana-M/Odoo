@@ -129,15 +129,43 @@ export class PayslipService {
       throw error;
     }
 
-    // 4. Calculate worked days
+    // 4. Calculate worked days & approved time off
     const workedDays = await this.getWorkedDays(employeeId, periodStart, periodEnd);
+
+    // Dynamic Leave Integration from TimeOffRequest
+    let unpaidLeaveDays = 0;
+    let paidLeaveDays = 0;
+    try {
+      if (mongoose.models.TimeOffRequest) {
+        const leaves = await mongoose.models.TimeOffRequest.find({
+          employeeId,
+          status: 'Approved',
+          startDate: { $lte: periodEnd },
+          endDate: { $gte: periodStart }
+        }).populate('timeOffTypeId');
+
+        for (const req of leaves) {
+          const tType: any = req.timeOffTypeId;
+          if (tType && tType.payrollIntegration === 'Unpaid') {
+            unpaidLeaveDays += Number(req.duration) || 0;
+          } else {
+            paidLeaveDays += Number(req.duration) || 0;
+          }
+        }
+      }
+    } catch {
+      // Fallback if time-off query encounters error
+    }
 
     // 5. Build calculation context
     const wage = Number(contract.wage) || 0;
     const context: Record<string, number> = {
       WAGE: wage,
       CONTRACT_WAGE: wage,
-      WORKED_DAYS: workedDays
+      WORKED_DAYS: workedDays,
+      UNPAID_LEAVES: unpaidLeaveDays,
+      PAID_LEAVES: paidLeaveDays,
+      TOTAL_LEAVES: unpaidLeaveDays + paidLeaveDays
     };
 
     let basic = 0;
@@ -349,10 +377,18 @@ export class PayslipService {
 
     // RBAC: Employee can only see their own payslips
     if (currentUser && currentUser.role === 'Employee') {
-      if (!currentUser.employeeId) {
+      let empId = currentUser.employeeId;
+      if (!empId && currentUser.email) {
+        const emp = await Employee.findOne({ email: currentUser.email.toLowerCase() });
+        if (emp) {
+          empId = emp._id.toString();
+        }
+      }
+
+      if (!empId) {
         return [];
       }
-      query.employeeId = new mongoose.Types.ObjectId(currentUser.employeeId);
+      query.employeeId = new mongoose.Types.ObjectId(empId);
     } else if (filterQuery.employeeId) {
       if (mongoose.Types.ObjectId.isValid(filterQuery.employeeId)) {
         query.employeeId = new mongoose.Types.ObjectId(filterQuery.employeeId);
