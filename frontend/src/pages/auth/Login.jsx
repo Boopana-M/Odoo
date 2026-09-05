@@ -97,7 +97,7 @@ export function Login() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'radial-gradient(ellipse at top, #231626 0%, #0d0914 100%)',
+        background: 'linear-gradient(135deg, #714B67 0%, #4a2e42 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -110,22 +110,22 @@ export function Login() {
           maxWidth: 960,
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          background: 'var(--bg-card)',
+          background: '#ffffff',
           borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)',
-          border: '1px solid var(--border)'
+          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
         }}
       >
         {/* Left Side: Login Form */}
         <div style={{ padding: '2.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
-            <div style={{ background: 'var(--primary)', padding: '8px', borderRadius: '8px', display: 'flex', boxShadow: '0 2px 8px rgba(113, 75, 103, 0.4)' }}>
+            <div style={{ background: '#714B67', padding: '8px', borderRadius: '8px', display: 'flex', boxShadow: '0 2px 8px rgba(113, 75, 103, 0.3)' }}>
               <Layers size={24} color="white" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)' }}>PeoplePay360</h2>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>HR & Payroll Operations</p>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#212529' }}>PeoplePay360</h2>
+              <p style={{ fontSize: '0.8rem', color: '#6C757D' }}>HR & Payroll Operations</p>
             </div>
           </div>
 
@@ -143,7 +143,7 @@ export function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                <Mail size={16} style={{ position: 'absolute', left: 10, top: 12, color: 'var(--text-light)' }} />
+                <Mail size={16} style={{ position: 'absolute', left: 10, top: 12, color: '#94A3B8' }} />
               </div>
             </div>
 
@@ -156,7 +156,7 @@ export function Login() {
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: 'var(--secondary-text)',
+                    color: '#714B67',
                     fontSize: '0.8rem',
                     fontWeight: 600,
                     cursor: 'pointer',
@@ -177,7 +177,7 @@ export function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <Lock size={16} style={{ position: 'absolute', left: 10, top: 12, color: 'var(--text-light)' }} />
+                <Lock size={16} style={{ position: 'absolute', left: 10, top: 12, color: '#94A3B8' }} />
               </div>
             </div>
 
@@ -193,13 +193,13 @@ export function Login() {
         </div>
 
         {/* Right Side: Demo Role Credentials & 1-Click Fill */}
-        <div style={{ background: 'var(--bg-subtle)', padding: '2.5rem', borderLeft: '1px solid var(--border)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div style={{ background: '#F8FAFC', padding: '2.5rem', borderLeft: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <Shield size={18} color="var(--brand-teal)" />
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)' }}>Role-Based Demo Credentials</h3>
+              <Shield size={18} color="#017E84" />
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#212529' }}>Role-Based Demo Credentials</h3>
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+            <p style={{ fontSize: '0.8rem', color: '#6C757D', marginBottom: '1.25rem' }}>
               Click any role to auto-fill credentials and test role permissions:
             </p>
 
@@ -218,18 +218,18 @@ export function Login() {
                     justifyContent: 'space-between',
                     padding: '0.75rem 1rem',
                     borderRadius: '8px',
-                    border: email === acc.email ? '2px solid var(--primary-accent)' : '1px solid var(--border)',
-                    background: email === acc.email ? 'var(--bg-hover)' : 'var(--bg-card)',
+                    border: email === acc.email ? '2px solid #714B67' : '1px solid #E2E8F0',
+                    background: email === acc.email ? '#f7eff5' : '#ffffff',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.15s ease'
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>{acc.label}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{acc.email}</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#212529' }}>{acc.label}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#6C757D', fontFamily: 'monospace' }}>{acc.email}</div>
                   </div>
-                  <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: 'var(--bg-subtle)', color: 'var(--secondary-text)', fontWeight: 600, border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: '#F1F5F9', color: '#017E84', fontWeight: 600, border: '1px solid #E2E8F0' }}>
                     {acc.role}
                   </span>
                 </button>
@@ -237,8 +237,8 @@ export function Login() {
             </div>
           </div>
 
-          <div style={{ marginTop: '1.5rem', padding: '0.75rem', background: 'rgba(113, 75, 103, 0.25)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--primary-text)', textAlign: 'center' }}>
-            Uniform Password for All Roles: <code style={{ fontWeight: 700, background: 'var(--bg-card)', color: 'var(--secondary-text)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border)' }}>Password123!</code>
+          <div style={{ marginTop: '1.5rem', padding: '0.75rem', background: '#f7eff5', border: '1px solid #e9d3e4', borderRadius: '8px', fontSize: '0.75rem', color: '#714B67', textAlign: 'center' }}>
+            Uniform Password for All Roles: <code style={{ fontWeight: 700, background: '#ffffff', color: '#714B67', padding: '2px 6px', borderRadius: '4px', border: '1px solid #e9d3e4' }}>Password123!</code>
           </div>
         </div>
       </div>

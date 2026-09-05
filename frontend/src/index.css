@@ -1,68 +1,57 @@
 :root {
-  /* =========================================
-     OD00 VIOLET & GRAY DARK DESIGN SYSTEM
-     ========================================= */
-  --primary: #71639e;          /* Odoo Signature Backend Violet */
-  --primary-hover: #8374b5;    /* Vibrant Violet for Hover */
-  --primary-plum: #714B67;     /* Odoo Deep Plum / Purple */
-  --primary-accent: #9d84c7;   /* Luminous Violet Highlight */
-  --primary-light: #241a38;    /* Dark Violet tint for active items */
-  --primary-text: #e9d5ff;     /* Crisp soft violet text */
+  /* ===================================================
+     ODOO NATIVE + MODERN HR DESIGN SYSTEM
+     =================================================== */
+  --primary: #714B67;          /* Signature Odoo Purple / Plum */
+  --primary-hover: #5d3c54;    /* Darker Purple on Hover */
+  --primary-light: #f7eff5;    /* Soft purple tint */
+  --primary-text: #714B67;     /* Purple text for brand accents */
   
-  --secondary: #00A09D;        /* Odoo Teal Accent */
-  --secondary-hover: #02b3b0;  /* Lighter Teal for Hover */
-  --secondary-light: #0d282b;  /* Dark Teal tint */
-  --secondary-text: #2dd4bf;   /* Teal highlight text */
+  --secondary: #017E84;        /* Signature Odoo Teal */
+  --secondary-hover: #01656a;  /* Darker Teal on Hover */
+  --secondary-light: #e6f6f7;  /* Soft teal tint */
+  --secondary-text: #017E84;   /* Teal text */
   
   --brand-purple: #714B67;
-  --brand-violet: #71639e;
-  --brand-teal: #00A09D;
-  --brand-gray: #8F8F8F;       /* Official Odoo Slate Gray */
-  --brand-gray-light: #9ca3af; /* Crisp secondary label gray */
-  --brand-gray-border: #3b2d52;/* Subtle dark border */
+  --brand-teal: #017E84;
+  --brand-gray: #8F8F8F;
   
-  /* =========================================
-     IMMERSIVE DARK THEME SURFACES
-     ========================================= */
-  --bg-main: #0c0814;          /* Deepest luxurious dark violet-slate canvas */
-  --bg-card: #150f22;          /* Rich dark card background */
-  --bg-subtle: #1d152e;        /* Elevated surface for controls/inputs/headers */
-  --bg-hover: #291e40;         /* Interactive hover surface */
-  --border: #2e2244;           /* Refined crisp borders */
-  --border-focus: #8374b5;     /* Focused element border */
+  /* Canvas, Cards & Borders */
+  --bg-main: #F7F7F7;          /* Very light clean gray background */
+  --bg-card: #FFFFFF;          /* Pure crisp white card background */
+  --bg-subtle: #F1F5F9;        /* Light subtle surface */
+  --bg-hover: #F8FAFC;         /* Hover state for table rows */
+  --border: #E2E8F0;           /* Clean subtle border */
+  --border-focus: #714B67;     /* Purple focus ring */
   
-  /* =========================================
-     CRISP HIGH-CONTRAST TYPOGRAPHY
-     ========================================= */
-  --text-main: #f9fafb;        /* Pure crisp text */
-  --text-muted: #9ca3af;       /* Odoo neutral slate gray for labels */
-  --text-light: #6b7280;       /* Subdued helper text / placeholders */
+  /* High-Contrast Readable Typography */
+  --text-main: #212529;        /* Deep dark charcoal primary text */
+  --text-muted: #6C757D;       /* Secondary gray for labels and captions */
+  --text-light: #94A3B8;       /* Placeholders and light disabled text */
   
-  /* =========================================
-     SEMANTIC STATUS ACCENTS
-     ========================================= */
-  --success: #00A09D;
-  --success-bg: rgba(0, 160, 157, 0.18);
-  --success-text: #2dd4bf;
+  /* Semantic Status Colors */
+  --success: #16A34A;          /* Green */
+  --success-bg: #DCFCE7;
+  --success-text: #15803D;
   
-  --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.15);
-  --warning-text: #fbbf24;
+  --warning: #D97706;          /* Amber */
+  --warning-bg: #FEF3C7;
+  --warning-text: #B45309;
   
-  --danger: #ef4444;
-  --danger-bg: rgba(239, 68, 68, 0.15);
-  --danger-text: #f87171;
+  --danger: #DC2626;           /* Red */
+  --danger-bg: #FEE2E2;
+  --danger-text: #B91C1C;
   
-  --info: #71639e;
-  --info-bg: rgba(113, 99, 158, 0.2);
-  --info-text: #c084fc;
+  --info: #0284C7;             /* Blue */
+  --info-bg: #E0F2FE;
+  --info-text: #0369A1;
 
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 10px -1px rgba(0, 0, 0, 0.6), 0 2px 5px -2px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 32px -4px rgba(0, 0, 0, 0.7), 0 6px 12px -4px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
 * {
@@ -74,10 +63,6 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: var(--bg-main);
-  background-image: 
-    radial-gradient(at 10% 10%, rgba(113, 99, 158, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 90%, rgba(0, 160, 157, 0.05) 0px, transparent 50%);
-  background-attachment: fixed;
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -98,31 +83,30 @@ button, input, select, textarea {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: transparent;
+  background-color: var(--bg-main);
 }
 
 .main-content {
   flex: 1;
-  padding: 1.5rem 2rem 3.5rem;
+  padding: 1.75rem 2rem 3.5rem;
   max-width: 1440px;
   margin: 0 auto;
   width: 100%;
 }
 
-/* Top Navbar */
+/* Top Navbar — Odoo Purple Header */
 .navbar {
-  background-color: #110c1c;
+  background-color: #714B67;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1.75rem;
-  height: 60px;
+  height: 58px;
   position: sticky;
   top: 0;
   z-index: 50;
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .nav-left {
@@ -142,14 +126,13 @@ button, input, select, textarea {
 }
 
 .brand-badge {
-  background: linear-gradient(135deg, #714B67 0%, #00A09D 100%);
+  background: #017E84;
   color: white;
-  padding: 0.18rem 0.55rem;
+  padding: 0.15rem 0.55rem;
   border-radius: 4px;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
 .nav-links {
@@ -166,9 +149,9 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.5rem 0.9rem;
+  padding: 0.5rem 0.85rem;
   border-radius: var(--radius-sm);
-  color: #9ca3af;
+  color: #f3e8f1;
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.15s ease;
@@ -178,15 +161,15 @@ button, input, select, textarea {
 }
 
 .nav-link:hover {
-  color: #f3f4f6;
-  background-color: rgba(113, 99, 158, 0.25);
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .nav-link.active {
   color: #ffffff;
-  background: linear-gradient(135deg, #71639e 0%, #594c80 100%);
+  background-color: rgba(0, 0, 0, 0.2);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(113, 99, 158, 0.4);
+  box-shadow: inset 0 -2px 0 #017E84;
 }
 
 .dropdown-menu {
@@ -194,7 +177,7 @@ button, input, select, textarea {
   top: 100%;
   left: 0;
   margin-top: 0.4rem;
-  background: #181126;
+  background: #ffffff;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
@@ -214,8 +197,8 @@ button, input, select, textarea {
 }
 
 .dropdown-item:hover {
-  background-color: var(--bg-hover);
-  color: var(--primary-accent);
+  background-color: var(--bg-subtle);
+  color: var(--primary);
 }
 
 .nav-right {
@@ -253,11 +236,11 @@ button, input, select, textarea {
   margin-top: 2px;
 }
 
-.role-admin { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
-.role-hr-manager { background: rgba(113, 99, 158, 0.25); color: #e9d5ff; border: 1px solid rgba(113, 99, 158, 0.4); }
-.role-payroll-manager { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
-.role-payroll-user { background: rgba(0, 160, 157, 0.25); color: #2dd4bf; border: 1px solid rgba(0, 160, 157, 0.4); }
-.role-employee { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
+.role-admin { background: #fee2e2; color: #991b1b; }
+.role-hr-manager { background: #e0e7ff; color: #3730a3; }
+.role-payroll-manager { background: #fef3c7; color: #92400e; }
+.role-payroll-user { background: #ccfbf1; color: #115e59; }
+.role-employee { background: #dcfce7; color: #166534; }
 
 /* Page Headers & Control Bars */
 .page-header {
@@ -322,12 +305,12 @@ button, input, select, textarea {
 }
 
 .smart-button:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary-accent);
+  background: #e2e8f0;
+  border-color: #cbd5e1;
 }
 
 .smart-button-icon {
-  color: var(--secondary-text);
+  color: var(--primary);
   display: flex;
   align-items: center;
 }
@@ -378,7 +361,7 @@ button, input, select, textarea {
 }
 
 .tab-btn.active {
-  color: var(--primary-accent);
+  color: var(--primary);
   border-bottom-color: var(--primary);
   font-weight: 600;
 }
@@ -399,48 +382,43 @@ button, input, select, textarea {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #71639e 0%, #5d4e87 100%);
+  background-color: var(--primary);
   color: #ffffff;
-  border-color: #71639e;
-  box-shadow: 0 2px 8px rgba(113, 99, 158, 0.35);
+  border-color: var(--primary);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #8374b5 0%, #6a5a99 100%);
-  border-color: #8374b5;
-  box-shadow: 0 4px 12px rgba(113, 99, 158, 0.5);
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .btn-secondary {
-  background-color: var(--bg-subtle);
+  background-color: #ffffff;
   border-color: var(--border);
   color: var(--text-main);
 }
 .btn-secondary:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--primary-accent);
-  color: #ffffff;
+  background-color: var(--bg-subtle);
+  border-color: #cbd5e1;
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #00A09D 0%, #01807d 100%);
+  background-color: var(--secondary);
   color: #ffffff;
-  border-color: #00A09D;
-  box-shadow: 0 2px 8px rgba(0, 160, 157, 0.35);
+  border-color: var(--secondary);
 }
 .btn-success:hover {
-  background: linear-gradient(135deg, #02b5b1 0%, #019491 100%);
-  border-color: #02b5b1;
+  background-color: var(--secondary-hover);
+  border-color: var(--secondary-hover);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  background-color: var(--danger);
   color: #ffffff;
-  border-color: #dc2626;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+  border-color: var(--danger);
 }
 .btn-danger:hover {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  border-color: #ef4444;
+  background-color: #b91c1c;
+  border-color: #b91c1c;
 }
 
 .btn-sm {
@@ -510,33 +488,32 @@ button, input, select, textarea {
 
 .form-label.required::after {
   content: ' *';
-  color: var(--danger-text);
+  color: var(--danger);
 }
 
 .form-control {
   padding: 0.55rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background-color: #120c1d;
+  background-color: #ffffff;
   color: var(--text-main);
   outline: none;
   transition: all 0.15s ease;
 }
 
 .form-control:focus {
-  border-color: var(--border-focus);
-  background-color: #160f24;
-  box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.25);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.2);
 }
 
 .form-control:disabled, .form-control[readonly] {
   background-color: var(--bg-subtle);
-  color: var(--text-light);
+  color: var(--text-muted);
   cursor: not-allowed;
 }
 
 select.form-control option {
-  background-color: #181126;
+  background-color: #ffffff;
   color: var(--text-main);
 }
 
@@ -557,7 +534,7 @@ select.form-control option {
 }
 
 .table th {
-  background: #191228;
+  background: #f8fafc;
   padding: 0.8rem 1rem;
   font-size: 0.75rem;
   font-weight: 600;
@@ -570,7 +547,7 @@ select.form-control option {
 .table td {
   padding: 0.85rem 1rem;
   font-size: 0.875rem;
-  border-bottom: 1px solid rgba(46, 34, 68, 0.6);
+  border-bottom: 1px solid var(--border);
   color: var(--text-main);
   vertical-align: middle;
 }
@@ -607,7 +584,7 @@ select.form-control option {
 .kanban-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
-  border-color: var(--primary-accent);
+  border-color: var(--primary);
 }
 
 .kanban-header {
@@ -621,13 +598,13 @@ select.form-control option {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--bg-subtle);
+  background: #f3e8f1;
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  color: var(--primary-text);
+  color: var(--primary);
   font-size: 1rem;
   flex-shrink: 0;
 }
@@ -643,11 +620,11 @@ select.form-control option {
   font-weight: 600;
 }
 
-.badge-success { background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(0, 160, 157, 0.35); }
-.badge-warning { background: var(--warning-bg); color: var(--warning-text); border: 1px solid rgba(245, 158, 11, 0.35); }
-.badge-danger { background: var(--danger-bg); color: var(--danger-text); border: 1px solid rgba(239, 68, 68, 0.35); }
-.badge-info { background: var(--info-bg); color: var(--info-text); border: 1px solid rgba(113, 99, 158, 0.35); }
-.badge-neutral { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border); }
+.badge-success { background: var(--success-bg); color: var(--success-text); }
+.badge-warning { background: var(--warning-bg); color: var(--warning-text); }
+.badge-danger { background: var(--danger-bg); color: var(--danger-text); }
+.badge-info { background: var(--info-bg); color: var(--info-text); }
+.badge-neutral { background: var(--bg-subtle); color: var(--text-muted); }
 
 /* Filter Bar */
 .filter-bar {
@@ -677,17 +654,17 @@ select.form-control option {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(8, 5, 12, 0.8);
+  background: rgba(15, 23, 42, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 1.5rem;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(2px);
 }
 
 .modal-content {
-  background: #181126;
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   max-width: 650px;
@@ -727,7 +704,7 @@ select.form-control option {
 .modal-footer {
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border);
-  background: #130c1e;
+  background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -739,7 +716,7 @@ select.form-control option {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Alerts Banner - Sleek Translucent Left Accent */
+/* Alerts Banner */
 .alert-banner {
   padding: 0.85rem 1.25rem;
   border-radius: var(--radius-md);
@@ -748,35 +725,30 @@ select.form-control option {
   align-items: flex-start;
   gap: 0.75rem;
   font-size: 0.875rem;
-  backdrop-filter: blur(4px);
 }
 
 .alert-warning {
-  background-color: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-left: 4px solid #f59e0b;
-  color: #fef3c7;
+  background-color: var(--warning-bg);
+  border: 1px solid #fde68a;
+  color: var(--warning-text);
 }
 
 .alert-danger {
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-left: 4px solid #ef4444;
-  color: #fee2e2;
+  background-color: var(--danger-bg);
+  border: 1px solid #fecaca;
+  color: var(--danger-text);
 }
 
 .alert-info {
-  background-color: rgba(113, 99, 158, 0.15);
-  border: 1px solid rgba(113, 99, 158, 0.35);
-  border-left: 4px solid #9d84c7;
-  color: #f3e8ff;
+  background-color: var(--info-bg);
+  border: 1px solid #bae6fd;
+  color: var(--info-text);
 }
 
 .alert-success {
-  background-color: rgba(0, 160, 157, 0.1);
-  border: 1px solid rgba(0, 160, 157, 0.3);
-  border-left: 4px solid #00A09D;
-  color: #ccfbf1;
+  background-color: var(--success-bg);
+  border: 1px solid #bbf7d0;
+  color: var(--success-text);
 }
 
 /* Dashboard Grid & KPIs */
@@ -796,12 +768,12 @@ select.form-control option {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease;
 }
 
 .kpi-card:hover {
   transform: translateY(-2px);
-  border-color: var(--primary-accent);
+  box-shadow: var(--shadow-md);
 }
 
 .kpi-title {
@@ -816,7 +788,7 @@ select.form-control option {
 .kpi-value {
   font-size: 1.85rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
   line-height: 1.1;
   letter-spacing: -0.02em;
 }
@@ -846,8 +818,7 @@ select.form-control option {
 }
 
 .toast {
-  background: #1c142b;
-  border: 1px solid var(--border);
+  background: #1e293b;
   color: #ffffff;
   padding: 0.75rem 1.25rem;
   border-radius: var(--radius-md);
@@ -860,9 +831,9 @@ select.form-control option {
   max-width: 380px;
 }
 
-.toast-success { background: #082d2b; border-color: var(--secondary); }
-.toast-error { background: #3b0f14; border-color: var(--danger); }
-.toast-info { background: #241a38; border-color: var(--primary-accent); }
+.toast-success { background: #065f46; }
+.toast-error { background: #991b1b; }
+.toast-info { background: #0c4a6e; }
 
 @keyframes toastIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -888,7 +859,7 @@ select.form-control option {
 }
 
 .wizard-step.active {
-  color: var(--primary-text);
+  color: var(--primary);
   font-weight: 700;
 }
 
