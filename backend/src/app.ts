@@ -12,6 +12,7 @@ import attendanceRoutes from './modules/attendance/attendance.routes';
 import timeOffTypeRoutes from './modules/timeoff/type/timeoff-type.routes';
 import timeOffAllocationRoutes from './modules/timeoff/allocation/timeoff-allocation.routes';
 import timeOffRequestRoutes from './modules/timeoff/request/request.routes';
+import salaryStructureRoutes from './modules/salary/structure/structure.routes';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -42,6 +43,11 @@ app.use('/api/timeoff/allocations', timeOffAllocationRoutes);
 // Time Off Requests
 app.use('/api/time-off/requests', timeOffRequestRoutes);
 app.use('/api/timeoff/requests', timeOffRequestRoutes);
+
+// Salary Structures
+app.use('/api/salary-structures', salaryStructureRoutes);
+app.use('/api/salary/structures', salaryStructureRoutes);
+app.use('/api/salary-structure', salaryStructureRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
