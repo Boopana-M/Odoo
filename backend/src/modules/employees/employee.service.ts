@@ -128,6 +128,15 @@ export class EmployeeService {
         error.statusCode = 400;
         throw error;
       }
+      const ScheduleModel = mongoose.models.WorkingSchedule;
+      if (ScheduleModel) {
+        const scheduleExists = await ScheduleModel.findById(data.scheduleId);
+        if (!scheduleExists) {
+          const error: any = new Error('Referenced working schedule does not exist');
+          error.statusCode = 400;
+          throw error;
+        }
+      }
       scheduleObjectId = new mongoose.Types.ObjectId(data.scheduleId);
     }
 
@@ -372,6 +381,15 @@ export class EmployeeService {
           const error: any = new Error('Invalid working schedule ID format');
           error.statusCode = 400;
           throw error;
+        }
+        const ScheduleModel = mongoose.models.WorkingSchedule;
+        if (ScheduleModel) {
+          const scheduleExists = await ScheduleModel.findById(data.scheduleId);
+          if (!scheduleExists) {
+            const error: any = new Error('Referenced working schedule does not exist');
+            error.statusCode = 400;
+            throw error;
+          }
         }
         employee.scheduleId = new mongoose.Types.ObjectId(data.scheduleId);
       }
