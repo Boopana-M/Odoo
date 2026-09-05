@@ -42,6 +42,19 @@ router.get(
   (req, res, next) => payslipController.getById(req, res, next)
 );
 
+// Generate / Download Payslip PDF (Admin, HR Payroll Manager, HR Payroll User, Employee - scoped in service)
+router.get(
+  '/:id/pdf',
+  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
+  (req, res, next) => payslipController.generatePdf(req, res, next)
+);
+
+router.post(
+  '/:id/pdf',
+  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
+  (req, res, next) => payslipController.generatePdf(req, res, next)
+);
+
 // Update payslip (Admin, HR Payroll Manager, HR Payroll User)
 router.put(
   '/:id',

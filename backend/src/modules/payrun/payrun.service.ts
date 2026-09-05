@@ -332,7 +332,13 @@ export class PayrunService {
     }
 
     if (payrun.status === 'Paid') {
-      const error: any = new Error('Cannot update a paid payrun');
+      const error: any = new Error('Cannot modify or update a paid payrun');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (payrun.status === 'Validated') {
+      const error: any = new Error('Cannot update a validated payrun');
       error.statusCode = 400;
       throw error;
     }
@@ -386,7 +392,13 @@ export class PayrunService {
     }
 
     if (payrun.status === 'Paid') {
-      const error: any = new Error('Cannot compute a paid payrun');
+      const error: any = new Error('Cannot modify or recompute a paid payrun');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (payrun.status === 'Validated') {
+      const error: any = new Error('Cannot recompute a validated payrun');
       error.statusCode = 400;
       throw error;
     }
@@ -423,11 +435,17 @@ export class PayrunService {
       throw error;
     }
 
-    // Check for critical blocking issues in warnings
+    if (payrun.status === 'Draft' || !payrun.payslipIds || payrun.payslipIds.length === 0) {
+      const error: any = new Error('Payrun must be computed and contain generated payslips before it can be validated');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Check for critical blocking issues in warnings (e.g. missing contracts)
     const missingContractWarnings = payrun.warnings.filter((w) => w.type === 'MISSING_CONTRACT');
-    if (missingContractWarnings.length === payrun.employeeIds.length && payrun.employeeIds.length > 0) {
+    if (missingContractWarnings.length > 0) {
       const error: any = new Error(
-        'Payrun validation failed: None of the selected employees have an active contract'
+        `Payrun validation failed: ${missingContractWarnings.length} selected employee(s) lack an active contract for the period`
       );
       error.statusCode = 400;
       throw error;
@@ -436,9 +454,18 @@ export class PayrunService {
     payrun.status = 'Validated';
     await payrun.save();
 
+    // Update associated payslips status to Validated
+    if (mongoose.models.Payslip && payrun.payslipIds && payrun.payslipIds.length > 0) {
+      await mongoose.models.Payslip.updateMany(
+        { _id: { $in: payrun.payslipIds } },
+        { status: 'Validated' }
+      );
+    }
+
     return (await Payrun.findById(id)
       .populate('salaryStructureId', 'name code')
-      .populate('employeeIds', 'firstName lastName employeeCode email jobPosition')) as IPayrun;
+      .populate('employeeIds', 'firstName lastName employeeCode email jobPosition')
+      .populate('payslipIds')) as IPayrun;
   }
 
   async markPaid(id: string): Promise<IPayrun> {
@@ -455,12 +482,27 @@ export class PayrunService {
       throw error;
     }
 
+    if (payrun.status !== 'Validated') {
+      const error: any = new Error('Payrun must be in Validated status before it can be marked as Paid');
+      error.statusCode = 400;
+      throw error;
+    }
+
     payrun.status = 'Paid';
     await payrun.save();
 
+    // Update associated payslips status to Paid
+    if (mongoose.models.Payslip && payrun.payslipIds && payrun.payslipIds.length > 0) {
+      await mongoose.models.Payslip.updateMany(
+        { _id: { $in: payrun.payslipIds } },
+        { status: 'Paid' }
+      );
+    }
+
     return (await Payrun.findById(id)
       .populate('salaryStructureId', 'name code')
-      .populate('employeeIds', 'firstName lastName employeeCode email jobPosition')) as IPayrun;
+      .populate('employeeIds', 'firstName lastName employeeCode email jobPosition')
+      .populate('payslipIds')) as IPayrun;
   }
 }
 

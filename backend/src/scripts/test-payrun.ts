@@ -94,6 +94,20 @@ async function runTests() {
       isActive: true
     }).save();
 
+    // Import SalaryRule dynamically or create doc
+    if (mongoose.models.SalaryRule) {
+      await new mongoose.models.SalaryRule({
+        salaryStructureId: structure._id,
+        name: 'Basic Salary',
+        code: 'BASIC',
+        category: 'Basic',
+        sequence: 10,
+        computationMethod: 'Fixed',
+        amount: 5000,
+        isActive: true
+      }).save();
+    }
+
     // Employee 1: Active with full info, valid contract
     const emp1 = await new Employee({
       employeeCode: `EMP_PR1_${timestamp}`,
@@ -340,15 +354,36 @@ async function runTests() {
     });
     assert(res16.status === 200 && Array.isArray(res16.body?.data), '16. Authorized payroll user can manage Payruns', JSON.stringify(res16.body));
 
+    // Prepare Payrun for Mark Paid by computing and validating (using emp1 who has valid contract)
+    const validPayrun = await request({
+      method: 'POST',
+      path: '/api/payruns',
+      token: payrollUserToken,
+      body: {
+        name: `Mark Paid Test Payroll ${timestamp}`,
+        salaryStructureId: structure._id.toString(),
+        periodStart: '2026-06-01',
+        periodEnd: '2026-06-30',
+        employeeIds: [emp1._id.toString()]
+      }
+    });
+    const validPayrunId = validPayrun.body?.data?._id;
+    const compRes = await request({ method: 'POST', path: `/api/payruns/${validPayrunId}/compute`, token: payrollUserToken });
+    const valRes = await request({ method: 'POST', path: `/api/payruns/${validPayrunId}/validate`, token: payrollUserToken });
+
+    if (valRes.status !== 200) {
+      console.log('ValRes error:', valRes.status, JSON.stringify(valRes.body));
+    }
+
     // 17. Mark Paid works only for an authorized payroll role
     const res17a = await request({
       method: 'POST',
-      path: `/api/payruns/${createdPayrunId}/mark-paid`,
+      path: `/api/payruns/${validPayrunId}/mark-paid`,
       token: hrManagerToken
     });
     const res17b = await request({
       method: 'POST',
-      path: `/api/payruns/${createdPayrunId}/mark-paid`,
+      path: `/api/payruns/${validPayrunId}/mark-paid`,
       token: payrollManagerToken
     });
     assert(
@@ -358,7 +393,7 @@ async function runTests() {
     );
 
     // 18. Paid Payrun remains stored
-    const storedPayrun = await Payrun.findById(createdPayrunId);
+    const storedPayrun = await Payrun.findById(validPayrunId);
     assert(
       storedPayrun !== null && storedPayrun.status === 'Paid',
       '18. Paid Payrun remains stored as historical record',

@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
 import { Payslip, IPayslip, PayslipLine, IPayslipLine } from './payslip.model';
 import { Payrun, IPayrun } from '../payrun/payrun.model';
 import { SalaryStructure } from '../salary/structure/structure.model';
@@ -14,6 +16,7 @@ import {
   validateCalculatePayslipInput
 } from './payslip.validation';
 import { AuthUserPayload } from '../../types/express';
+import { generatePayslipPdfBuffer } from '../../utils/pdfGenerator';
 
 export class PayslipService {
   /**
@@ -412,6 +415,61 @@ export class PayslipService {
     }
 
     return payslip;
+  }
+
+  async generatePayslipPdf(id: string, currentUser?: AuthUserPayload): Promise<Buffer> {
+    const payslip = await this.getPayslipById(id, currentUser);
+
+    const empObj: any = payslip.employeeId || {};
+    const contractObj: any = payslip.contractId || {};
+    const structureObj: any = payslip.salaryStructureId || {};
+    const payrunObj: any = payslip.payrunId || {};
+
+    const pdfBuffer = generatePayslipPdfBuffer({
+      payslipId: payslip._id.toString(),
+      employeeName: `${empObj.firstName || ''} ${empObj.lastName || ''}`.trim() || 'Employee',
+      employeeCode: empObj.employeeCode || '',
+      jobPosition: empObj.jobPosition || contractObj.jobPosition || '',
+      departmentName: empObj.departmentId?.name || '',
+      payrunName: payrunObj.name || 'Payroll Batch',
+      periodStart: payslip.periodStart ? new Date(payslip.periodStart).toISOString().split('T')[0] : '',
+      periodEnd: payslip.periodEnd ? new Date(payslip.periodEnd).toISOString().split('T')[0] : '',
+      salaryStructureName: structureObj.name || '',
+      workedDays: payslip.workedDays || 0,
+      basic: payslip.basic || 0,
+      allowances: payslip.allowances || 0,
+      gross: payslip.gross || 0,
+      deductions: payslip.deductions || 0,
+      net: payslip.net || 0,
+      status: payslip.status || 'Computed',
+      bankAccount: empObj.bankDetails?.accountNumber || empObj.bankDetails?.iban || '',
+      lines: (payslip.lines || []).map((l: any) => ({
+        name: l.name || '',
+        code: l.code || '',
+        category: l.category || '',
+        calculatedAmount: l.calculatedAmount || 0
+      }))
+    });
+
+    try {
+      const uploadsDir = path.join(process.cwd(), 'uploads', 'payslips');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const filePath = path.join(uploadsDir, `payslip_${id}.pdf`);
+      fs.writeFileSync(filePath, pdfBuffer);
+
+      // Save pdfReference relative path
+      const refPath = `/uploads/payslips/payslip_${id}.pdf`;
+      if (payslip.pdfReference !== refPath) {
+        payslip.pdfReference = refPath;
+        await payslip.save();
+      }
+    } catch {
+      // If disk write fails, continue serving generated PDF buffer
+    }
+
+    return pdfBuffer;
   }
 
   async getPayslipsByPayrunId(payrunId: string, currentUser?: AuthUserPayload): Promise<IPayslip[]> {

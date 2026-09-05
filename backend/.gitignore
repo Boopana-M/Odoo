@@ -27,6 +27,7 @@ coverage/
 dist/
 build/
 out/
+uploads/
 
 # TypeScript cache
 *.tsbuildinfo

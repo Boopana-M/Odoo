@@ -28,6 +28,17 @@ export class PayslipController {
     }
   }
 
+  async generatePdf(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const pdfBuffer = await payslipService.generatePayslipPdf(req.params.id as string, req.user);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="payslip_${req.params.id}.pdf"`);
+      res.status(200).send(pdfBuffer);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getByPayrun(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const payslips = await payslipService.getPayslipsByPayrunId(
