@@ -35,13 +35,18 @@ export const ROLES = {
  */
 export function getNavigationForRole(role) {
   // 1. EMPLOYEE ROLE NAVIGATION
-  // Allowed: Own profile, own attendance, own time off.
+  // Allowed: Own dashboard, own profile, own attendance, own time off.
   // Restricted: No payroll, contracts admin, schedule admin, or system administration.
   if (role === ROLES.EMPLOYEE) {
     return [
       {
         title: 'Employee Self-Service',
         items: [
+          {
+            id: 'dashboard',
+            label: 'My Dashboard',
+            icon: <LayoutGrid size={18} />,
+          },
           {
             id: 'employee-profile',
             label: 'My Profile',
@@ -63,9 +68,14 @@ export function getNavigationForRole(role) {
   }
 
   // Common HR Modules for HR Manager and roles inheriting it
-  const hrSections = {
+  const getHrSections = (dashboardLabel = 'Dashboard') => ({
     title: 'HR Management',
     items: [
+      {
+        id: 'dashboard',
+        label: dashboardLabel,
+        icon: <LayoutGrid size={18} />,
+      },
       {
         id: 'employees',
         label: 'Employees',
@@ -97,13 +107,13 @@ export function getNavigationForRole(role) {
         icon: <Calendar size={18} />,
       },
     ],
-  };
+  });
 
   // 2. HR MANAGER ROLE NAVIGATION
-  // Allowed: HR Modules (Employees, Attendance, Contracts, Working Schedules, Time Off)
+  // Allowed: HR Modules (Dashboard, Employees, Attendance, Contracts, Working Schedules, Time Off)
   // Restricted: STRICTLY NO PAYROLL ACCESS
   if (role === ROLES.HR_MANAGER) {
-    return [hrSections];
+    return [getHrSections('HR Dashboard')];
   }
 
   // 3. HR PAYROLL USER ROLE NAVIGATION
@@ -111,7 +121,7 @@ export function getNavigationForRole(role) {
   // Permission info: Salary Structures (Read-only), Salary Rules (Read-only)
   if (role === ROLES.HR_PAYROLL_USER) {
     return [
-      hrSections,
+      getHrSections('Dashboard'),
       {
         title: 'Payroll Management',
         items: [
@@ -154,7 +164,7 @@ export function getNavigationForRole(role) {
   // Inherits HR Payroll User + Full CRUD on all payroll modules
   if (role === ROLES.HR_PAYROLL_MANAGER) {
     return [
-      hrSections,
+      getHrSections('Dashboard'),
       {
         title: 'Payroll Management',
         items: [
@@ -187,7 +197,7 @@ export function getNavigationForRole(role) {
   // Full system access: All HR modules, all Payroll modules, and Administration
   if (role === ROLES.ADMIN) {
     return [
-      hrSections,
+      getHrSections('Executive Dashboard'),
       {
         title: 'Payroll Management',
         items: [

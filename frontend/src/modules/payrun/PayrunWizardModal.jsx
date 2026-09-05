@@ -13,11 +13,6 @@ import {
   ArrowRight,
   ArrowLeft,
   Users,
-  CheckCircle2,
-  AlertCircle,
-  HelpCircle,
-  Calendar,
-  Layers,
 } from 'lucide-react';
 
 /**

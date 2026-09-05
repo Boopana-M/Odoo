@@ -5,6 +5,7 @@ import { AppShell } from './components/layout/AppShell';
 import { PageLoading } from './components/ui/LoadingState';
 import { Login } from './pages/Login';
 import { RoleLanding } from './pages/RoleLanding';
+import { DashboardPage } from './pages/DashboardPage';
 import { EmployeesPage } from './pages/EmployeesPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { WorkingSchedulesPage } from './pages/WorkingSchedulesPage';
@@ -39,6 +40,25 @@ function MainRouter() {
   );
   const activeNavItem = isAllowed && selectedNavItem ? selectedNavItem : defaultItem;
 
+  const handleNavigate = (itemId) => {
+    if (itemId !== 'contracts') {
+      setContractEmployeeFilter(null);
+    }
+    if (itemId !== 'attendance') {
+      setAttendanceEmployeeFilter(null);
+    }
+    if (itemId !== 'time-off') {
+      setTimeOffEmployeeFilter(null);
+    }
+    if (itemId !== 'salary-rules') {
+      setSalaryStructureRuleFilter(null);
+    }
+    if (itemId !== 'payslips') {
+      setPayslipEmployeeFilter(null);
+    }
+    setSelectedNavItem(itemId);
+  };
+
   // 1. Initial Authentication & Session Restoration Loading State
   if (isLoading) {
     return (
@@ -58,6 +78,9 @@ function MainRouter() {
 
   // 3. Render appropriate active module
   const renderActiveModule = () => {
+    if (activeNavItem === 'dashboard') {
+      return <DashboardPage onNavigate={handleNavigate} />;
+    }
     if (activeNavItem === 'employees' || activeNavItem === 'employee-profile') {
       return (
         <EmployeesPage
@@ -146,24 +169,7 @@ function MainRouter() {
       user={user}
       sidebarSections={sidebarSections}
       activeNavItem={activeNavItem}
-      onNavigate={(itemId) => {
-        if (itemId !== 'contracts') {
-          setContractEmployeeFilter(null);
-        }
-        if (itemId !== 'attendance') {
-          setAttendanceEmployeeFilter(null);
-        }
-        if (itemId !== 'time-off') {
-          setTimeOffEmployeeFilter(null);
-        }
-        if (itemId !== 'salary-rules') {
-          setSalaryStructureRuleFilter(null);
-        }
-        if (itemId !== 'payslips') {
-          setPayslipEmployeeFilter(null);
-        }
-        setSelectedNavItem(itemId);
-      }}
+      onNavigate={handleNavigate}
       onLogout={logout}
     >
       {renderActiveModule()}
