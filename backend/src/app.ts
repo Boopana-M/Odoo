@@ -7,6 +7,8 @@ import userRoutes from './modules/users/user.routes';
 import departmentRoutes from './modules/departments/department.routes';
 import employeeRoutes from './modules/employees/employee.routes';
 import contractRoutes from './modules/contracts/contract.routes';
+import scheduleRoutes from './modules/schedules/schedule.routes';
+import attendanceRoutes from './modules/attendance/attendance.routes';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -22,6 +24,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/contracts', contractRoutes);
+app.use('/api/schedules', scheduleRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/attendances', attendanceRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
