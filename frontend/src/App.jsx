@@ -1,31 +1,70 @@
 import React, { useState } from 'react';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import { getNavigationForRole } from './utils/navigation';
 import { AppShell } from './components/layout/AppShell';
-import { DesignSystemPreview } from './pages/DesignSystemPreview';
+import { PageLoading } from './components/ui/LoadingState';
+import { Login } from './pages/Login';
+import { RoleLanding } from './pages/RoleLanding';
 
 /**
- * Main Application Component
- * Demonstrates the Phase 1 Application Shell + Design System
+ * Authenticated Core Application Router
+ * Distinguishes unauthenticated (Login), authenticating (Loading), and authenticated (AppShell).
  */
-export function App() {
-  const [activeNavItem, setActiveNavItem] = useState('design-system');
+function MainRouter() {
+  const { user, role, isAuthenticated, isLoading, logout } = useAuth();
+  const [selectedNavItem, setSelectedNavItem] = useState('');
 
-  // Active user representation for TopBar display
-  const currentUser = {
-    name: 'Admin User',
-    role: 'HR & Payroll Admin',
-    initials: 'AD',
-  };
+  // Determine role-permitted navigation sections
+  const sidebarSections = getNavigationForRole(role);
+  const defaultItem = sidebarSections[0]?.items[0]?.id || '';
 
+  // Derive activeNavItem: if selectedNavItem is permitted in current role, use it; otherwise fallback to default
+  const isAllowed = sidebarSections.some((sec) =>
+    sec.items.some((item) => item.id === selectedNavItem)
+  );
+  const activeNavItem = isAllowed && selectedNavItem ? selectedNavItem : defaultItem;
+
+  // 1. Initial Authentication & Session Restoration Loading State
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <PageLoading
+          message="Verifying PeoplePay360 authentication session..."
+          className="[&_p]:!text-slate-400 [&_div]:!border-t-blue-500"
+        />
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated Access -> Render Login Screen
+  if (!isAuthenticated || !user) {
+    return <Login />;
+  }
+
+  // 3. Authenticated Access -> Render Role-Aware AppShell
   return (
     <AppShell
-      pageContext="UI Design System"
-      pageSubtitle="PeoplePay360 Foundation"
-      user={currentUser}
+      pageContext="PeoplePay360"
+      pageSubtitle={`${user.role || 'HR & Payroll'} Suite`}
+      user={user}
+      sidebarSections={sidebarSections}
       activeNavItem={activeNavItem}
-      onNavigate={(itemId) => setActiveNavItem(itemId)}
+      onNavigate={(itemId) => setSelectedNavItem(itemId)}
+      onLogout={logout}
     >
-      <DesignSystemPreview />
+      <RoleLanding activeNavItem={activeNavItem} />
     </AppShell>
+  );
+}
+
+/**
+ * Root Application Component with Auth Provider
+ */
+export function App() {
+  return (
+    <AuthProvider>
+      <MainRouter />
+    </AuthProvider>
   );
 }
 

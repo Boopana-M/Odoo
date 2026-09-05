@@ -20,6 +20,7 @@ export function AppShell({
   sidebarSections,
   activeNavItem,
   onNavigate,
+  onLogout,
   className = '',
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -40,7 +41,7 @@ export function AppShell({
   const marginClasses = collapsed ? 'lg:ml-[72px]' : 'lg:ml-[260px]';
 
   return (
-    <div className={`flex min-h-screen bg-slate-50 text-slate-900 ${className}`.trim()}>
+    <div className={`flex min-h-screen bg-slate-950 text-slate-100 ${className}`.trim()}>
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={handleToggleCollapse}
@@ -56,6 +57,7 @@ export function AppShell({
           pageContext={pageContext}
           pageSubtitle={pageSubtitle}
           user={user}
+          onLogout={onLogout}
           onToggleMobile={handleToggleMobile}
         />
 
