@@ -14,6 +14,7 @@ import {
   Key,
   Settings,
   LayoutGrid,
+  Building2,
 } from 'lucide-react';
 
 /**
@@ -69,6 +70,11 @@ export function getNavigationForRole(role) {
         id: 'employees',
         label: 'Employees',
         icon: <Users size={18} />,
+      },
+      {
+        id: 'departments',
+        label: 'Departments',
+        icon: <Building2 size={18} />,
       },
       {
         id: 'attendance',

@@ -6,6 +6,8 @@ import { PageLoading } from './components/ui/LoadingState';
 import { Login } from './pages/Login';
 import { RoleLanding } from './pages/RoleLanding';
 import { EmployeesPage } from './pages/EmployeesPage';
+import { DepartmentsPage } from './pages/DepartmentsPage';
+import { WorkingSchedulesPage } from './pages/WorkingSchedulesPage';
 
 /**
  * Authenticated Core Application Router
@@ -46,6 +48,12 @@ function MainRouter() {
   const renderActiveModule = () => {
     if (activeNavItem === 'employees' || activeNavItem === 'employee-profile') {
       return <EmployeesPage />;
+    }
+    if (activeNavItem === 'departments') {
+      return <DepartmentsPage />;
+    }
+    if (activeNavItem === 'schedules') {
+      return <WorkingSchedulesPage />;
     }
     return <RoleLanding activeNavItem={activeNavItem} />;
   };
