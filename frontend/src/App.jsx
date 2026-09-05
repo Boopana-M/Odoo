@@ -1,190 +1,239 @@
-import React, { useState } from 'react';
-import { AuthProvider, useAuth } from './auth/AuthContext';
-import { getNavigationForRole } from './utils/navigation';
-import { AppShell } from './components/layout/AppShell';
-import { PageLoading } from './components/ui/LoadingState';
-import { Login } from './pages/Login';
-import { RoleLanding } from './pages/RoleLanding';
-import { DashboardPage } from './pages/DashboardPage';
-import { EmployeesPage } from './pages/EmployeesPage';
-import { DepartmentsPage } from './pages/DepartmentsPage';
-import { WorkingSchedulesPage } from './pages/WorkingSchedulesPage';
-import { ContractsPage } from './pages/ContractsPage';
-import { AttendancePage } from './pages/AttendancePage';
-import { TimeOffPage } from './pages/TimeOffPage';
-import { SalaryStructuresPage } from './pages/SalaryStructuresPage';
-import { SalaryRulesPage } from './pages/SalaryRulesPage';
-import { PayrunsPage } from './pages/PayrunsPage';
-import { PayslipsPage } from './pages/PayslipsPage';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 
-/**
- * Authenticated Core Application Router
- * Distinguishes unauthenticated (Login), authenticating (Loading), and authenticated (AppShell).
- */
-function MainRouter() {
-  const { user, role, isAuthenticated, isLoading, logout } = useAuth();
-  const [selectedNavItem, setSelectedNavItem] = useState('');
-  const [contractEmployeeFilter, setContractEmployeeFilter] = useState(null);
-  const [attendanceEmployeeFilter, setAttendanceEmployeeFilter] = useState(null);
-  const [timeOffEmployeeFilter, setTimeOffEmployeeFilter] = useState(null);
-  const [salaryStructureRuleFilter, setSalaryStructureRuleFilter] = useState(null);
-  const [payslipEmployeeFilter, setPayslipEmployeeFilter] = useState(null);
+// Pages
+import Login from './pages/auth/Login';
+import UserManagement from './pages/auth/UserManagement';
+import Dashboard from './pages/dashboard/Dashboard';
+import EmployeeList from './pages/employees/EmployeeList';
+import EmployeeDetail from './pages/employees/EmployeeDetail';
+import DepartmentList from './pages/departments/DepartmentList';
+import ContractList from './pages/contracts/ContractList';
+import ContractDetail from './pages/contracts/ContractDetail';
+import ScheduleList from './pages/schedules/ScheduleList';
+import ScheduleDetail from './pages/schedules/ScheduleDetail';
+import AttendanceList from './pages/attendance/AttendanceList';
+import TimeOffHub from './pages/timeoff/TimeOffHub';
+import SalaryStructureList from './pages/salary/SalaryStructureList';
+import SalaryStructureDetail from './pages/salary/SalaryStructureDetail';
+import SalaryRuleList from './pages/salary/SalaryRuleList';
+import PayrunList from './pages/payrun/PayrunList';
+import PayrunDetail from './pages/payrun/PayrunDetail';
+import PayslipList from './pages/payslip/PayslipList';
+import PayslipDetail from './pages/payslip/PayslipDetail';
 
-  // Determine role-permitted navigation sections
-  const sidebarSections = getNavigationForRole(role);
-  const defaultItem = sidebarSections[0]?.items[0]?.id || '';
+import { useAuth } from './context/AuthContext';
 
-  // Derive activeNavItem: if selectedNavItem is permitted in current role, use it; otherwise fallback to default
-  const isAllowed = sidebarSections.some((sec) =>
-    sec.items.some((item) => item.id === selectedNavItem)
-  );
-  const activeNavItem = isAllowed && selectedNavItem ? selectedNavItem : defaultItem;
-
-  const handleNavigate = (itemId) => {
-    if (itemId !== 'contracts') {
-      setContractEmployeeFilter(null);
-    }
-    if (itemId !== 'attendance') {
-      setAttendanceEmployeeFilter(null);
-    }
-    if (itemId !== 'time-off') {
-      setTimeOffEmployeeFilter(null);
-    }
-    if (itemId !== 'salary-rules') {
-      setSalaryStructureRuleFilter(null);
-    }
-    if (itemId !== 'payslips') {
-      setPayslipEmployeeFilter(null);
-    }
-    setSelectedNavItem(itemId);
-  };
-
-  // 1. Initial Authentication & Session Restoration Loading State
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-        <PageLoading
-          message="Verifying PeoplePay360 authentication session..."
-          className="[&_p]:!text-slate-400 [&_div]:!border-t-blue-500"
-        />
-      </div>
-    );
+function RootRedirect() {
+  const { isEmployeeOnly, role } = useAuth();
+  if (isEmployeeOnly || role === 'Employee') {
+    return <Navigate to="/employees" replace />;
   }
-
-  // 2. Unauthenticated Access -> Render Login Screen
-  if (!isAuthenticated || !user) {
-    return <Login />;
-  }
-
-  // 3. Render appropriate active module
-  const renderActiveModule = () => {
-    if (activeNavItem === 'dashboard') {
-      return <DashboardPage onNavigate={handleNavigate} />;
-    }
-    if (activeNavItem === 'employees' || activeNavItem === 'employee-profile') {
-      return (
-        <EmployeesPage
-          onNavigateToContracts={(empId) => {
-            setContractEmployeeFilter(empId);
-            setSelectedNavItem('contracts');
-          }}
-          onNavigateToAttendance={(empId) => {
-            setAttendanceEmployeeFilter(empId);
-            setSelectedNavItem('attendance');
-          }}
-          onNavigateToTimeOff={(empId) => {
-            setTimeOffEmployeeFilter(empId);
-            setSelectedNavItem('time-off');
-          }}
-        />
-      );
-    }
-    if (activeNavItem === 'departments') {
-      return <DepartmentsPage />;
-    }
-    if (activeNavItem === 'schedules') {
-      return <WorkingSchedulesPage />;
-    }
-    if (activeNavItem === 'contracts') {
-      return (
-        <ContractsPage
-          key={contractEmployeeFilter || 'all'}
-          initialEmployeeFilter={contractEmployeeFilter}
-        />
-      );
-    }
-    if (activeNavItem === 'attendance') {
-      return (
-        <AttendancePage
-          key={attendanceEmployeeFilter || 'all'}
-          initialEmployeeFilter={attendanceEmployeeFilter}
-        />
-      );
-    }
-    if (activeNavItem === 'time-off') {
-      return (
-        <TimeOffPage
-          key={timeOffEmployeeFilter || 'all'}
-          initialEmployeeFilter={timeOffEmployeeFilter}
-        />
-      );
-    }
-    if (activeNavItem === 'salary-structures') {
-      return (
-        <SalaryStructuresPage
-          onNavigateToRules={(structId) => {
-            setSalaryStructureRuleFilter(structId);
-            setSelectedNavItem('salary-rules');
-          }}
-        />
-      );
-    }
-    if (activeNavItem === 'salary-rules') {
-      return (
-        <SalaryRulesPage
-          key={salaryStructureRuleFilter || 'all'}
-          initialStructureFilter={salaryStructureRuleFilter}
-        />
-      );
-    }
-    if (activeNavItem === 'payruns') {
-      return <PayrunsPage />;
-    }
-    if (activeNavItem === 'payslips') {
-      return (
-        <PayslipsPage
-          key={payslipEmployeeFilter || 'all'}
-          initialEmployeeFilter={payslipEmployeeFilter}
-        />
-      );
-    }
-    return <RoleLanding activeNavItem={activeNavItem} />;
-  };
-
-  // 4. Authenticated Access -> Render Role-Aware AppShell
-  return (
-    <AppShell
-      pageContext="PeoplePay360"
-      pageSubtitle={`${user.role || 'HR & Payroll'} Suite`}
-      user={user}
-      sidebarSections={sidebarSections}
-      activeNavItem={activeNavItem}
-      onNavigate={handleNavigate}
-      onLogout={logout}
-    >
-      {renderActiveModule()}
-    </AppShell>
-  );
+  return <Navigate to="/dashboard" replace />;
 }
 
-/**
- * Root Application Component with Auth Provider
- */
 export function App() {
   return (
-    <AuthProvider>
-      <MainRouter />
-    </AuthProvider>
+    <div className="app-container">
+      <Navbar />
+      <main className="main-content">
+        <Routes>
+          {/* Public Auth */}
+          <Route path="/login" element={<Login />} />
+
+          {/* Dashboard */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Employees */}
+          <Route
+            path="/employees"
+            element={
+              <ProtectedRoute>
+                <EmployeeList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employees/:id"
+            element={
+              <ProtectedRoute>
+                <EmployeeDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Departments Management */}
+          <Route
+            path="/departments"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Manager']}>
+                <DepartmentList />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Contracts */}
+          <Route
+            path="/contracts"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                <ContractList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contracts/:id"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                <ContractDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Working Schedules */}
+          <Route
+            path="/schedules"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                <ScheduleList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/schedules/:id"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                <ScheduleDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Attendance */}
+          <Route
+            path="/attendance"
+            element={
+              <ProtectedRoute>
+                <AttendanceList />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Time Off Hub */}
+          <Route
+            path="/time-off"
+            element={<Navigate to="/time-off/requests" replace />}
+          />
+          <Route
+            path="/time-off/requests"
+            element={
+              <ProtectedRoute>
+                <TimeOffHub />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/time-off/allocations"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User', 'Employee']}>
+                <TimeOffHub />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/time-off/types"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                <TimeOffHub />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Salary Structures & Rules */}
+          <Route
+            path="/payroll/structures"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Payroll Manager', 'HR Payroll User']}>
+                <SalaryStructureList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payroll/structures/:id"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Payroll Manager', 'HR Payroll User']}>
+                <SalaryStructureDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payroll/rules"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Payroll Manager', 'HR Payroll User']}>
+                <SalaryRuleList />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Payruns */}
+          <Route
+            path="/payroll/payruns"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Payroll Manager', 'HR Payroll User']}>
+                <PayrunList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payroll/payruns/:id"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'HR Payroll Manager', 'HR Payroll User']}>
+                <PayrunDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Payslips */}
+          <Route
+            path="/payroll/payslips"
+            element={
+              <ProtectedRoute>
+                <PayslipList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payroll/payslips/:id"
+            element={
+              <ProtectedRoute>
+                <PayslipDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin User Management */}
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute allowedRoles={['Admin']}>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Default catch-all */}
+          <Route path="*" element={<RootRedirect />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 

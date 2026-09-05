@@ -53,6 +53,21 @@ export class UserController {
     }
   }
 
+  async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await userService.resetUserPassword(
+        req.params.id as string,
+        req.body.password || req.body.newPassword
+      );
+      res.status(200).json({
+        status: 'success',
+        message: result.message
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       await userService.deleteUser(req.params.id as string);
