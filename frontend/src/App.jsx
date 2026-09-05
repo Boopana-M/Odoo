@@ -5,6 +5,7 @@ import { AppShell } from './components/layout/AppShell';
 import { PageLoading } from './components/ui/LoadingState';
 import { Login } from './pages/Login';
 import { RoleLanding } from './pages/RoleLanding';
+import { EmployeesPage } from './pages/EmployeesPage';
 
 /**
  * Authenticated Core Application Router
@@ -41,7 +42,15 @@ function MainRouter() {
     return <Login />;
   }
 
-  // 3. Authenticated Access -> Render Role-Aware AppShell
+  // 3. Render appropriate active module
+  const renderActiveModule = () => {
+    if (activeNavItem === 'employees' || activeNavItem === 'employee-profile') {
+      return <EmployeesPage />;
+    }
+    return <RoleLanding activeNavItem={activeNavItem} />;
+  };
+
+  // 4. Authenticated Access -> Render Role-Aware AppShell
   return (
     <AppShell
       pageContext="PeoplePay360"
@@ -52,7 +61,7 @@ function MainRouter() {
       onNavigate={(itemId) => setSelectedNavItem(itemId)}
       onLogout={logout}
     >
-      <RoleLanding activeNavItem={activeNavItem} />
+      {renderActiveModule()}
     </AppShell>
   );
 }
