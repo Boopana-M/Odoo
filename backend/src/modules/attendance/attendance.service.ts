@@ -152,6 +152,16 @@ export class AttendanceService {
       throw error;
     }
 
+    // Security ownership check for Employee role
+    if (updaterUser && updaterUser.role === 'Employee') {
+      const attendanceEmpId = attendance.employeeId.toString();
+      if (!updaterUser.employeeId || updaterUser.employeeId.toString() !== attendanceEmpId) {
+        const error: any = new Error('Access forbidden: You can only update your own attendance records');
+        error.statusCode = 403;
+        throw error;
+      }
+    }
+
     const validatedData = await validateAttendanceData(input, true, {
       checkIn: attendance.checkIn,
       checkOut: attendance.checkOut
@@ -164,12 +174,18 @@ export class AttendanceService {
     if (validatedData.workedHours !== undefined) attendance.workedHours = validatedData.workedHours;
     if (validatedData.status) attendance.status = validatedData.status;
 
-    // Record manual correction metadata
-    attendance.isCorrected = true;
-    if (updaterUser) {
+    // Record manual correction metadata if modified by HR/Admin or explicitly provided
+    if (updaterUser && updaterUser.role !== 'Employee') {
+      attendance.isCorrected = true;
       attendance.correctedBy = new mongoose.Types.ObjectId(updaterUser.userId);
+      attendance.correctionReason = input.correctionReason?.trim() || attendance.correctionReason || 'Manual correction by HR/Admin';
+    } else if (input.correctionReason) {
+      attendance.isCorrected = true;
+      if (updaterUser) {
+        attendance.correctedBy = new mongoose.Types.ObjectId(updaterUser.userId);
+      }
+      attendance.correctionReason = input.correctionReason.trim();
     }
-    attendance.correctionReason = input.correctionReason?.trim() || attendance.correctionReason || 'Manual correction by HR/Admin';
 
     await attendance.save();
 
