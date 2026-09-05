@@ -2,6 +2,8 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import healthRoutes from './routes/health';
+import authRoutes from './modules/auth/auth.routes';
+import userRoutes from './modules/users/user.routes';
 import departmentRoutes from './modules/departments/department.routes';
 import employeeRoutes from './modules/employees/employee.routes';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler';
@@ -14,6 +16,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api', healthRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/employees', employeeRoutes);
 
