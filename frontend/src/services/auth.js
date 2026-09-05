@@ -17,6 +17,8 @@ export function getStoredToken() {
   }
 }
 
+export const getAuthToken = getStoredToken;
+
 /**
  * Stores the JWT token in localStorage
  */

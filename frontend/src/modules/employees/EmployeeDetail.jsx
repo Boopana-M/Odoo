@@ -29,6 +29,8 @@ export function EmployeeDetail({
   onEdit,
   onDelete,
   onViewContracts,
+  onViewAttendance,
+  onViewTimeOff,
   canEdit = false,
   canDelete = false,
   isSelf = false,
@@ -183,34 +185,61 @@ export function EmployeeDetail({
             <span className="text-[11px] text-slate-400">View Wage Agreements →</span>
           </div>
 
-          {/* Attendance - Scheduled for future */}
-          <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default opacity-80">
+          {/* Attendance - Phase 6 Active */}
+          <div
+            onClick={onViewAttendance ? () => onViewAttendance(employee) : undefined}
+            className={`p-3 rounded-lg flex flex-col gap-1 transition-all ${
+              onViewAttendance
+                ? 'bg-emerald-950/30 border border-emerald-500/40 hover:border-emerald-400 hover:bg-emerald-950/50 cursor-pointer shadow-sm'
+                : 'bg-slate-950/60 border border-slate-800 cursor-default'
+            }`}
+            role={onViewAttendance ? 'button' : undefined}
+            tabIndex={onViewAttendance ? 0 : undefined}
+          >
             <div className="flex items-center justify-between">
-              <Clock size={16} className="text-slate-500" />
-              <span className="text-[10px] text-slate-500 font-mono">Future</span>
+              <Clock size={16} className="text-emerald-400" />
+              <span className="text-[10px] text-emerald-400 font-mono font-medium">Phase 6 Active</span>
             </div>
-            <span className="text-xs font-semibold text-slate-300">Attendance</span>
-            <span className="text-[11px] text-slate-500">Check-in / Check-out</span>
+            <span className="text-xs font-semibold text-slate-200">Attendance</span>
+            <span className="text-[11px] text-slate-400">View Shift Logs →</span>
           </div>
 
-          {/* Time Off - Scheduled for future */}
-          <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default opacity-80">
+          {/* Time Off - Phase 6 Active */}
+          <div
+            onClick={onViewTimeOff ? () => onViewTimeOff(employee) : undefined}
+            className={`p-3 rounded-lg flex flex-col gap-1 transition-all ${
+              onViewTimeOff
+                ? 'bg-blue-950/30 border border-blue-500/40 hover:border-blue-400 hover:bg-blue-950/50 cursor-pointer shadow-sm'
+                : 'bg-slate-950/60 border border-slate-800 cursor-default'
+            }`}
+            role={onViewTimeOff ? 'button' : undefined}
+            tabIndex={onViewTimeOff ? 0 : undefined}
+          >
             <div className="flex items-center justify-between">
-              <Calendar size={16} className="text-slate-500" />
-              <span className="text-[10px] text-slate-500 font-mono">Future</span>
+              <Calendar size={16} className="text-blue-400" />
+              <span className="text-[10px] text-blue-400 font-mono font-medium">Phase 6 Active</span>
             </div>
-            <span className="text-xs font-semibold text-slate-300">Time Off</span>
-            <span className="text-[11px] text-slate-500">Requests & Balances</span>
+            <span className="text-xs font-semibold text-slate-200">Time Off</span>
+            <span className="text-[11px] text-slate-400">Requests & Balances →</span>
           </div>
 
-          {/* Allocations - Scheduled for future */}
-          <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default opacity-80">
+          {/* Allocations - Linked via Time Off */}
+          <div
+            onClick={onViewTimeOff ? () => onViewTimeOff(employee) : undefined}
+            className={`p-3 rounded-lg flex flex-col gap-1 transition-all ${
+              onViewTimeOff
+                ? 'bg-indigo-950/30 border border-indigo-500/40 hover:border-indigo-400 hover:bg-indigo-950/50 cursor-pointer shadow-sm'
+                : 'bg-slate-950/60 border border-slate-800 cursor-default'
+            }`}
+            role={onViewTimeOff ? 'button' : undefined}
+            tabIndex={onViewTimeOff ? 0 : undefined}
+          >
             <div className="flex items-center justify-between">
-              <CheckCircle2 size={16} className="text-slate-500" />
-              <span className="text-[10px] text-slate-500 font-mono">Future</span>
+              <CheckCircle2 size={16} className="text-indigo-400" />
+              <span className="text-[10px] text-indigo-400 font-mono font-medium">Phase 6 Active</span>
             </div>
-            <span className="text-xs font-semibold text-slate-300">Allocations</span>
-            <span className="text-[11px] text-slate-500">Leave Entitlements</span>
+            <span className="text-xs font-semibold text-slate-200">Allocations</span>
+            <span className="text-[11px] text-slate-400">Entitlements & Status →</span>
           </div>
         </div>
       </div>

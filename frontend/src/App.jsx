@@ -9,6 +9,8 @@ import { EmployeesPage } from './pages/EmployeesPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { WorkingSchedulesPage } from './pages/WorkingSchedulesPage';
 import { ContractsPage } from './pages/ContractsPage';
+import { AttendancePage } from './pages/AttendancePage';
+import { TimeOffPage } from './pages/TimeOffPage';
 
 /**
  * Authenticated Core Application Router
@@ -18,6 +20,8 @@ function MainRouter() {
   const { user, role, isAuthenticated, isLoading, logout } = useAuth();
   const [selectedNavItem, setSelectedNavItem] = useState('');
   const [contractEmployeeFilter, setContractEmployeeFilter] = useState(null);
+  const [attendanceEmployeeFilter, setAttendanceEmployeeFilter] = useState(null);
+  const [timeOffEmployeeFilter, setTimeOffEmployeeFilter] = useState(null);
 
   // Determine role-permitted navigation sections
   const sidebarSections = getNavigationForRole(role);
@@ -55,6 +59,14 @@ function MainRouter() {
             setContractEmployeeFilter(empId);
             setSelectedNavItem('contracts');
           }}
+          onNavigateToAttendance={(empId) => {
+            setAttendanceEmployeeFilter(empId);
+            setSelectedNavItem('attendance');
+          }}
+          onNavigateToTimeOff={(empId) => {
+            setTimeOffEmployeeFilter(empId);
+            setSelectedNavItem('time-off');
+          }}
         />
       );
     }
@@ -72,6 +84,22 @@ function MainRouter() {
         />
       );
     }
+    if (activeNavItem === 'attendance') {
+      return (
+        <AttendancePage
+          key={attendanceEmployeeFilter || 'all'}
+          initialEmployeeFilter={attendanceEmployeeFilter}
+        />
+      );
+    }
+    if (activeNavItem === 'time-off') {
+      return (
+        <TimeOffPage
+          key={timeOffEmployeeFilter || 'all'}
+          initialEmployeeFilter={timeOffEmployeeFilter}
+        />
+      );
+    }
     return <RoleLanding activeNavItem={activeNavItem} />;
   };
 
@@ -86,6 +114,12 @@ function MainRouter() {
       onNavigate={(itemId) => {
         if (itemId !== 'contracts') {
           setContractEmployeeFilter(null);
+        }
+        if (itemId !== 'attendance') {
+          setAttendanceEmployeeFilter(null);
+        }
+        if (itemId !== 'time-off') {
+          setTimeOffEmployeeFilter(null);
         }
         setSelectedNavItem(itemId);
       }}
