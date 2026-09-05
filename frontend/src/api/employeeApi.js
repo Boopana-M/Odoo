@@ -10,7 +10,7 @@ export const employeeApi = {
     const queryString = params.toString();
     return api.get(`/employees${queryString ? `?${queryString}` : ''}`);
   },
-  getById: (id) => api.get(`/employees/${id}`),
+  getById: (id) => (id === 'me' ? api.get('/employees/me') : api.get(`/employees/${id}`)),
   getMyProfile: () => api.get('/employees/me'),
   create: (data) => api.post('/employees', data),
   update: (id, data) => api.put(`/employees/${id}`, data),

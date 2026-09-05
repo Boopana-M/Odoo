@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Users, LayoutGrid, List, Plus, Search, Filter, Mail, Briefcase, Building } from 'lucide-react';
 import { employeeApi } from '../../api/employeeApi';
 import { departmentApi } from '../../api/departmentApi';
@@ -13,6 +13,10 @@ export function EmployeeList() {
   const navigate = useNavigate();
   const { isHRManager, isEmployeeOnly, user } = useAuth();
   const { success, error } = useNotification();
+
+  if (isEmployeeOnly) {
+    return <Navigate to="/employees/me" replace />;
+  }
 
   const [employees, setEmployees] = useState([]);
   const [departments, setDepartments] = useState([]);

@@ -176,16 +176,18 @@ export function EmployeeDetail() {
       {/* Header & Back Link */}
       <div className="page-header">
         <div className="page-title-area">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => navigate('/employees')}
-          >
-            <ArrowLeft size={16} /> Back
-          </button>
+          {!isEmployeeOnly && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => navigate('/employees')}
+            >
+              <ArrowLeft size={16} /> Back
+            </button>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <h1 className="page-title">
-              {employee.firstName} {employee.lastName}
+              {isEmployeeOnly ? 'My Profile' : `${employee.firstName} ${employee.lastName}`}
             </h1>
             <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>({employee.employeeCode})</span>
             <StatusBadge status={employee.status} />
@@ -218,21 +220,21 @@ export function EmployeeDetail() {
           icon={Calendar}
           count={counts.timeOff}
           label="Time Off"
-          onClick={() => navigate(`/time-off/requests?employeeId=${id}`)}
+          onClick={() => navigate(isEmployeeOnly ? '/time-off/requests' : `/time-off/requests?employeeId=${employee._id}`)}
         />
         {isHRManager && (
           <SmartButton
             icon={FileText}
             count={counts.contracts}
             label="Contracts"
-            onClick={() => navigate(`/contracts?employeeId=${id}`)}
+            onClick={() => navigate(`/contracts?employeeId=${employee._id}`)}
           />
         )}
         <SmartButton
           icon={Clock}
           count={counts.attendance}
           label="Attendance"
-          onClick={() => navigate(`/attendance?employeeId=${id}`)}
+          onClick={() => navigate(isEmployeeOnly ? '/attendance' : `/attendance?employeeId=${employee._id}`)}
         />
       </div>
 

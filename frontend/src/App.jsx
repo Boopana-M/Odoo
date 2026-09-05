@@ -29,7 +29,7 @@ import { useAuth } from './context/AuthContext';
 function RootRedirect() {
   const { isEmployeeOnly, role } = useAuth();
   if (isEmployeeOnly || role === 'Employee') {
-    return <Navigate to="/employees" replace />;
+    return <Navigate to="/employees/me" replace />;
   }
   return <Navigate to="/dashboard" replace />;
 }
