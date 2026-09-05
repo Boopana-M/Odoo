@@ -937,3 +937,132 @@ select.form-control option {
   color: white;
   border-color: var(--primary);
 }
+
+/* ===================================================
+   SLIDING AUDIT DRAWER & CONFLICT WIDGETS
+   =================================================== */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.slide-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 500px;
+  max-width: 92vw;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.drawer-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+}
+
+.drawer-body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.drawer-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+
+.conflict-card {
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.conflict-card:hover {
+  border-color: rgba(217, 119, 6, 0.6);
+  background: rgba(245, 158, 11, 0.08);
+  transform: translateY(-1px);
+}
+
+.conflict-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--warning);
+}
+
+.conflict-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background: rgba(217, 119, 6, 0.15);
+  color: var(--warning);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.audit-banner-pill {
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: linear-gradient(90deg, rgba(113, 75, 103, 0.06) 0%, rgba(217, 119, 6, 0.08) 100%);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--warning);
+  box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7);
+  animation: pulseWarning 2s infinite;
+}
+
+@keyframes pulseWarning {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(217, 119, 6, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+}
+

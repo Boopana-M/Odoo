@@ -14,7 +14,12 @@ import {
   Layers,
   Check,
   Trash2,
-  Edit2
+  Edit2,
+  X,
+  ChevronRight,
+  ShieldAlert,
+  AlertCircle,
+  Users
 } from 'lucide-react';
 import { payrunApi } from '../../api/payrunApi';
 import { payslipApi } from '../../api/payslipApi';
@@ -35,7 +40,8 @@ export function PayrunDetail() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Modals state
+  // Modals & Drawer state
+  const [isWarningsDrawerOpen, setIsWarningsDrawerOpen] = useState(false);
   const [isEmailResultOpen, setIsEmailResultOpen] = useState(false);
   const [emailResult, setEmailResult] = useState(null);
   const [isDeletePayrunOpen, setIsDeletePayrunOpen] = useState(false);
@@ -197,6 +203,27 @@ export function PayrunDetail() {
     }
   };
 
+  // Helper: Parse Warning Message into structured info
+  const parseWarning = (w) => {
+    const type = w.type || 'CONFLICT';
+    const msg = w.message || '';
+    
+    // Extract employee name: "Employee <Name> already..."
+    const empMatch = msg.match(/Employee\s+([A-Za-z\s]+?)\s+(already|has)/i);
+    const employeeName = empMatch ? empMatch[1].trim() : null;
+    
+    // Extract conflicting payrun name: "in another payrun (<Name>)"
+    const payrunMatch = msg.match(/in another payrun \((.*?)\)/i);
+    const conflictingBatch = payrunMatch ? payrunMatch[1] : null;
+
+    return {
+      type,
+      message: msg,
+      employeeName,
+      conflictingBatch,
+    };
+  };
+
   if (loading) {
     return <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>Loading payrun processing view...</div>;
   }
@@ -345,43 +372,53 @@ export function PayrunDetail() {
         </div>
       </div>
 
-      {/* Warnings Banner with Resolution Options */}
+      {/* Sleek Compact Audit Notice Banner */}
       {payrun.warnings && payrun.warnings.length > 0 && (
-        <div className="alert-banner alert-warning" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-            <AlertTriangle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.35rem' }}>
-                Attention: {payrun.warnings.length} Payroll Warning(s) / Conflict(s) Detected
+        <div className="audit-banner-pill">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="pulse-dot" />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>
+                  Payroll Audit Alert:
+                </span>
+                <span className="conflict-badge">
+                  <AlertTriangle size={12} /> {payrun.warnings.length} Conflicts Detected
+                </span>
               </div>
-              <ul style={{ paddingLeft: '1.25rem', margin: 0, fontSize: '0.85rem' }}>
-                {payrun.warnings.map((w, idx) => (
-                  <li key={idx} style={{ marginTop: '0.2rem' }}>
-                    <strong>[{w.type}]:</strong> {w.message}
-                  </li>
-                ))}
-              </ul>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                Overlapping pay periods detected with existing payruns. Click below to review sliding conflict cards.
+              </div>
             </div>
           </div>
 
-          {/* Direct Resolution Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(217, 119, 6, 0.2)' }}>
-            <span style={{ fontSize: '0.8rem', color: '#92400E', fontWeight: 500, marginRight: 'auto' }}>
-              💡 Created by mistake or period overlap? You can delete or edit this batch:
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={() => setIsEditPayrunOpen(true)}
+              style={{ fontSize: '0.8rem' }}
             >
-              <Edit2 size={14} /> Edit Payrun
+              <Edit2 size={13} /> Edit Batch
             </button>
             <button
               type="button"
               className="btn btn-danger btn-sm"
               onClick={() => setIsDeletePayrunOpen(true)}
+              style={{ fontSize: '0.8rem' }}
             >
-              <Trash2 size={14} /> Delete This Payrun
+              <Trash2 size={13} /> Delete Batch
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => setIsWarningsDrawerOpen(true)}
+              style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+            >
+              <span>Review Conflicts ({payrun.warnings.length})</span>
+              <ChevronRight size={14} />
             </button>
           </div>
         </div>
@@ -604,6 +641,140 @@ export function PayrunDetail() {
           </div>
         </form>
       </Modal>
+
+      {/* Sliding Audit Warnings & Conflict Widgets Drawer */}
+      {isWarningsDrawerOpen && payrun.warnings && (
+        <>
+          <div 
+            className="drawer-backdrop" 
+            onClick={() => setIsWarningsDrawerOpen(false)}
+          />
+          <div className="slide-drawer">
+            <div className="drawer-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{ padding: '0.45rem', borderRadius: '8px', background: 'rgba(217, 119, 6, 0.12)', color: 'var(--warning)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShieldAlert size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    Audit Conflicts ({payrun.warnings.length})
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    Overlapping payslips & period locks detected
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setIsWarningsDrawerOpen(false)}
+                style={{ padding: '0.35rem', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Quick Resolution Controls in Drawer */}
+            <div style={{ padding: '1rem 1.5rem', background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+                Batch Resolution Actions:
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{ flex: 1, fontSize: '0.8rem' }}
+                  onClick={() => {
+                    setIsWarningsDrawerOpen(false);
+                    setIsEditPayrunOpen(true);
+                  }}
+                >
+                  <Edit2 size={13} /> Edit Payrun Dates
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  style={{ flex: 1, fontSize: '0.8rem' }}
+                  onClick={() => {
+                    setIsWarningsDrawerOpen(false);
+                    setIsDeletePayrunOpen(true);
+                  }}
+                >
+                  <Trash2 size={13} /> Delete This Batch
+                </button>
+              </div>
+            </div>
+
+            <div className="drawer-body">
+              {payrun.warnings.map((w, idx) => {
+                const parsed = parseWarning(w);
+                const matchingPayslip = payslips.find(p => {
+                  const fullName = `${p.employeeId?.firstName || ''} ${p.employeeId?.lastName || ''}`.trim().toLowerCase();
+                  return parsed.employeeName && fullName.includes(parsed.employeeName.toLowerCase());
+                });
+
+                return (
+                  <div key={idx} className="conflict-card">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ 
+                          width: '28px', 
+                          height: '28px', 
+                          borderRadius: '50%', 
+                          background: 'var(--primary)', 
+                          color: '#fff', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          fontWeight: 700
+                        }}>
+                          {parsed.employeeName ? parsed.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2) : 'EM'}
+                        </div>
+                        <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>
+                          {parsed.employeeName || 'Staff Member'}
+                        </span>
+                      </div>
+                      <span className="conflict-badge">
+                        {parsed.type}
+                      </span>
+                    </div>
+
+                    <p style={{ margin: '0.25rem 0 0.5rem', fontSize: '0.825rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
+                      {parsed.message}
+                    </p>
+
+                    {matchingPayslip && (
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '0.35rem', borderTop: '1px dashed rgba(217, 119, 6, 0.2)' }}>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', color: 'var(--danger-text)' }}
+                          onClick={() => {
+                            setDeletePayslipId(matchingPayslip._id);
+                          }}
+                        >
+                          <Trash2 size={12} /> Remove this employee's payslip
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="drawer-footer">
+              <button
+                type="button"
+                className="btn btn-secondary btn-block"
+                onClick={() => setIsWarningsDrawerOpen(false)}
+              >
+                Close Panel
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
