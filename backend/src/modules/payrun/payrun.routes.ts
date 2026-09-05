@@ -68,4 +68,11 @@ router.post(
   (req, res, next) => payrunController.markPaid(req, res, next)
 );
 
+// Bulk send payslips by email
+router.post(
+  '/:id/send-payslips',
+  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User'),
+  (req, res, next) => payrunController.sendPayslips(req, res, next)
+);
+
 export default router;

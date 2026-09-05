@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { payrunService } from './payrun.service';
+import { emailService } from '../../utils/emailService';
 
 export class PayrunController {
   async getEligibleEmployees(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -110,6 +111,19 @@ export class PayrunController {
         status: 'success',
         message: 'Payrun marked as paid',
         data: payrun
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async sendPayslips(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await emailService.sendPayrunBulkPayslips(req.params.id as string);
+      res.status(200).json({
+        status: 'success',
+        message: 'Bulk payslip email process completed',
+        data: result
       });
     } catch (error) {
       next(error);
