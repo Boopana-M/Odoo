@@ -129,6 +129,19 @@ export class PayrunController {
       next(error);
     }
   }
+
+  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await payrunService.deletePayrun(req.params.id as string);
+      res.status(200).json({
+        status: 'success',
+        message: 'Payrun and associated payslips deleted successfully',
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const payrunController = new PayrunController();

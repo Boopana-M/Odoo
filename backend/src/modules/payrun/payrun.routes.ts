@@ -75,4 +75,11 @@ router.post(
   (req, res, next) => payrunController.sendPayslips(req, res, next)
 );
 
+// Delete Payrun & associated payslips
+router.delete(
+  '/:id',
+  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User'),
+  (req, res, next) => payrunController.delete(req, res, next)
+);
+
 export default router;

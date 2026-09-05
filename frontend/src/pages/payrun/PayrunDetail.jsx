@@ -12,12 +12,15 @@ import {
   Download,
   Clock,
   Layers,
-  Check
+  Check,
+  Trash2,
+  Edit2
 } from 'lucide-react';
 import { payrunApi } from '../../api/payrunApi';
 import { payslipApi } from '../../api/payslipApi';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -32,9 +35,18 @@ export function PayrunDetail() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Send Payslips Modal
+  // Modals state
   const [isEmailResultOpen, setIsEmailResultOpen] = useState(false);
   const [emailResult, setEmailResult] = useState(null);
+  const [isDeletePayrunOpen, setIsDeletePayrunOpen] = useState(false);
+  const [isEditPayrunOpen, setIsEditPayrunOpen] = useState(false);
+  const [deletePayslipId, setDeletePayslipId] = useState(null);
+
+  // Edit Form State
+  const [editForm, setEditForm] = useState({
+    name: '',
+    status: 'Draft'
+  });
 
   const fetchPayrunData = async () => {
     setLoading(true);
@@ -46,6 +58,10 @@ export function PayrunDetail() {
 
       setPayrun(payrunRes.data);
       setPayslips(payslipsRes.data || []);
+      setEditForm({
+        name: payrunRes.data?.name || '',
+        status: payrunRes.data?.status || 'Draft'
+      });
     } catch (err) {
       error(err.message || 'Failed to load payrun processing details');
     } finally {
@@ -118,6 +134,51 @@ export function PayrunDetail() {
     }
   };
 
+  // Action: Delete Entire Payrun
+  const handleDeletePayrun = async () => {
+    setActionLoading(true);
+    try {
+      await payrunApi.delete(id);
+      success('Payrun and all associated duplicate payslips deleted successfully');
+      navigate('/payroll/payruns');
+    } catch (err) {
+      error(err.message || 'Failed to delete payrun');
+      setActionLoading(false);
+    }
+  };
+
+  // Action: Edit Payrun
+  const handleUpdatePayrun = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      await payrunApi.update(id, editForm);
+      success('Payrun updated successfully');
+      setIsEditPayrunOpen(false);
+      fetchPayrunData();
+    } catch (err) {
+      error(err.message || 'Failed to update payrun');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Action: Delete Individual Payslip
+  const handleDeleteIndividualPayslip = async () => {
+    if (!deletePayslipId) return;
+    setActionLoading(true);
+    try {
+      await payslipApi.delete(deletePayslipId);
+      success('Payslip deleted successfully');
+      setDeletePayslipId(null);
+      fetchPayrunData();
+    } catch (err) {
+      error(err.message || 'Failed to delete payslip');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Download PDF
   const handleDownloadPdf = async (payslipId, employeeName) => {
     try {
@@ -175,43 +236,61 @@ export function PayrunDetail() {
         {/* Action Toolbar (Following strict state transitions) */}
         {isPayrollUser && (
           <div className="page-actions">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setIsEditPayrunOpen(true)}
+              title="Edit Payrun Settings"
+            >
+              <Edit2 size={15} /> Edit Payrun
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={() => setIsDeletePayrunOpen(true)}
+              title="Delete this payrun and clear duplicate payslips"
+            >
+              <Trash2 size={15} /> Delete Payrun
+            </button>
+
             {(isDraft || isComputed) && (
               <button
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm"
                 onClick={handleCompute}
                 disabled={actionLoading}
               >
-                <Calculator size={16} /> {isComputed ? 'Re-Compute' : 'Compute'}
+                <Calculator size={15} /> {isComputed ? 'Re-Compute' : 'Compute'}
               </button>
             )}
 
             {isComputed && (
               <button
-                className="btn btn-success"
+                className="btn btn-success btn-sm"
                 onClick={handleValidate}
                 disabled={actionLoading}
               >
-                <CheckCircle size={16} /> Validate Payrun
+                <CheckCircle size={15} /> Validate Payrun
               </button>
             )}
 
             {isValidated && (
               <button
-                className="btn btn-success"
+                className="btn btn-success btn-sm"
                 onClick={handleMarkPaid}
                 disabled={actionLoading}
               >
-                <CreditCard size={16} /> Mark as Paid
+                <CreditCard size={15} /> Mark as Paid
               </button>
             )}
 
             {(isValidated || isPaid) && (
               <button
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm"
                 onClick={handleSendPayslips}
                 disabled={actionLoading}
               >
-                <Mail size={16} /> Send Payslips by Email
+                <Mail size={15} /> Send Payslips
               </button>
             )}
           </div>
@@ -266,21 +345,44 @@ export function PayrunDetail() {
         </div>
       </div>
 
-      {/* Warnings Banner */}
+      {/* Warnings Banner with Resolution Options */}
       {payrun.warnings && payrun.warnings.length > 0 && (
-        <div className="alert-banner alert-warning">
-          <AlertTriangle size={20} />
-          <div>
-            <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>
-              Attention: {payrun.warnings.length} Payroll Warning(s) Detected
+        <div className="alert-banner alert-warning" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+            <AlertTriangle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.35rem' }}>
+                Attention: {payrun.warnings.length} Payroll Warning(s) / Conflict(s) Detected
+              </div>
+              <ul style={{ paddingLeft: '1.25rem', margin: 0, fontSize: '0.85rem' }}>
+                {payrun.warnings.map((w, idx) => (
+                  <li key={idx} style={{ marginTop: '0.2rem' }}>
+                    <strong>[{w.type}]:</strong> {w.message}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul style={{ paddingLeft: '1.25rem', margin: 0 }}>
-              {payrun.warnings.map((w, idx) => (
-                <li key={idx} style={{ marginTop: '0.2rem' }}>
-                  <strong>[{w.type}]:</strong> {w.message}
-                </li>
-              ))}
-            </ul>
+          </div>
+
+          {/* Direct Resolution Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(217, 119, 6, 0.2)' }}>
+            <span style={{ fontSize: '0.8rem', color: '#92400E', fontWeight: 500, marginRight: 'auto' }}>
+              💡 Created by mistake or period overlap? You can delete or edit this batch:
+            </span>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setIsEditPayrunOpen(true)}
+            >
+              <Edit2 size={14} /> Edit Payrun
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={() => setIsDeletePayrunOpen(true)}
+            >
+              <Trash2 size={14} /> Delete This Payrun
+            </button>
           </div>
         </div>
       )}
@@ -354,6 +456,16 @@ export function PayrunDetail() {
                         >
                           View Breakdown
                         </button>
+                        {isPayrollUser && !isPaid && (
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            style={{ color: 'var(--danger)', borderColor: '#FCA5A5' }}
+                            onClick={() => setDeletePayslipId(p._id)}
+                            title="Delete this payslip"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -409,6 +521,88 @@ export function PayrunDetail() {
             {emailResult?.message || 'The backend dispatched individual PDF payslips to employee mailboxes via Nodemailer SMTP service.'}
           </p>
         </div>
+      </Modal>
+
+      {/* Confirm Delete Payrun Dialog */}
+      <ConfirmDialog
+        isOpen={isDeletePayrunOpen}
+        onClose={() => setIsDeletePayrunOpen(false)}
+        onConfirm={handleDeletePayrun}
+        title="Delete Payrun Batch"
+        message={`Are you sure you want to delete payrun "${payrun.name}"? This will permanently delete this payrun batch and all ${payslips.length} associated payslips, freeing any overlapping duplicate constraints.`}
+        confirmText="Yes, Delete Payrun"
+        confirmVariant="danger"
+        loading={actionLoading}
+      />
+
+      {/* Confirm Delete Individual Payslip Dialog */}
+      <ConfirmDialog
+        isOpen={!!deletePayslipId}
+        onClose={() => setDeletePayslipId(null)}
+        onConfirm={handleDeleteIndividualPayslip}
+        title="Delete Payslip"
+        message="Are you sure you want to delete this individual payslip record?"
+        confirmText="Yes, Delete Payslip"
+        confirmVariant="danger"
+        loading={actionLoading}
+      />
+
+      {/* Edit Payrun Modal */}
+      <Modal
+        isOpen={isEditPayrunOpen}
+        onClose={() => setIsEditPayrunOpen(false)}
+        title="Edit Payrun Settings"
+        footer={
+          <>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setIsEditPayrunOpen(false)}
+              disabled={actionLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleUpdatePayrun}
+              disabled={actionLoading}
+            >
+              {actionLoading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </>
+        }
+      >
+        <form onSubmit={handleUpdatePayrun} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="form-group">
+            <label className="form-label required">Payrun Batch Name</label>
+            <input
+              type="text"
+              className="form-control"
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Workflow Status</label>
+            <select
+              className="form-control"
+              value={editForm.status}
+              onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+              disabled={isPaid}
+            >
+              <option value="Draft">Draft (Reset to Draft)</option>
+              <option value="Computed">Computed</option>
+              <option value="Validated">Validated</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Tip: Setting status to Draft or Cancelled clears duplicate locking rules.
+            </span>
+          </div>
+        </form>
       </Modal>
     </div>
   );

@@ -504,6 +504,39 @@ export class PayrunService {
       .populate('employeeIds', 'firstName lastName employeeCode email jobPosition')
       .populate('payslipIds')) as IPayrun;
   }
+
+  async deletePayrun(id: string): Promise<{ deleted: boolean; payrunId: string; payslipsDeleted: number }> {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      const error: any = new Error('Invalid payrun ID format');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const payrun = await Payrun.findById(id);
+    if (!payrun) {
+      const error: any = new Error('Payrun not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Delete all associated generated payslips for this payrun
+    let deletedPayslipCount = 0;
+    if (mongoose.models.Payslip) {
+      const delResult = await mongoose.models.Payslip.deleteMany({
+        $or: [{ payrunId: id }, { _id: { $in: payrun.payslipIds || [] } }]
+      });
+      deletedPayslipCount = delResult.deletedCount || 0;
+    }
+
+    // Delete the payrun itself
+    await Payrun.findByIdAndDelete(id);
+
+    return {
+      deleted: true,
+      payrunId: id,
+      payslipsDeleted: deletedPayslipCount
+    };
+  }
 }
 
 export const payrunService = new PayrunService();

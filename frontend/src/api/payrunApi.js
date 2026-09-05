@@ -12,5 +12,6 @@ export const payrunApi = {
   compute: (id) => api.post(`/payruns/${id}/compute`, {}),
   validate: (id) => api.post(`/payruns/${id}/validate`, {}),
   markPaid: (id) => api.post(`/payruns/${id}/mark-paid`, {}),
-  sendPayslips: (id) => api.post(`/payruns/${id}/send-payslips`, {})
+  sendPayslips: (id) => api.post(`/payruns/${id}/send-payslips`, {}),
+  delete: (id) => api.delete(`/payruns/${id}`)
 };

@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Plus, ArrowRight, AlertTriangle, CheckCircle, Calendar, DollarSign } from 'lucide-react';
+import { Briefcase, Plus, ArrowRight, AlertTriangle, CheckCircle, Calendar, DollarSign, Trash2 } from 'lucide-react';
 import { payrunApi } from '../../api/payrunApi';
 import StatusBadge from '../../components/StatusBadge';
 import PayrunWizardModal from './PayrunWizardModal';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 
 export function PayrunList() {
   const navigate = useNavigate();
   const { isPayrollUser } = useAuth();
-  const { error } = useNotification();
+  const { success, error } = useNotification();
 
   const [payruns, setPayruns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchPayruns = async () => {
     setLoading(true);
@@ -31,6 +34,21 @@ export function PayrunList() {
   useEffect(() => {
     fetchPayruns();
   }, []);
+
+  const handleDeletePayrun = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await payrunApi.delete(deleteTarget._id);
+      success(`Payrun "${deleteTarget.name}" deleted successfully`);
+      setDeleteTarget(null);
+      fetchPayruns();
+    } catch (err) {
+      error(err.message || 'Failed to delete payrun');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -101,12 +119,24 @@ export function PayrunList() {
                     )}
                   </td>
                   <td style={{ textAlign: 'right' }}>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => navigate(`/payroll/payruns/${p._id}`)}
-                    >
-                      Open Processing View <ArrowRight size={14} />
-                    </button>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => navigate(`/payroll/payruns/${p._id}`)}
+                      >
+                        Open View <ArrowRight size={14} />
+                      </button>
+                      {isPayrollUser && p.status !== 'Paid' && (
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{ color: 'var(--danger)', borderColor: '#FCA5A5' }}
+                          onClick={() => setDeleteTarget(p)}
+                          title="Delete payrun batch"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -125,6 +155,18 @@ export function PayrunList() {
           )}
         </div>
       )}
+
+      {/* Confirm Delete Payrun Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeletePayrun}
+        title="Delete Payrun Batch"
+        message={`Are you sure you want to delete payrun "${deleteTarget?.name}"? This will remove all generated duplicate payslips and free the period.`}
+        confirmText="Yes, Delete Payrun"
+        confirmVariant="danger"
+        loading={deleteLoading}
+      />
 
       {/* 2-Step Wizard Modal */}
       <PayrunWizardModal
