@@ -3,10 +3,9 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { MainContent } from './MainContent';
 import { PageContainer } from './PageContainer';
-import './AppShell.css';
 
 /**
- * Reusable AppShell Component
+ * Reusable AppShell Component with Tailwind CSS
  * Assembles the full authenticated application shell:
  * - Sidebar (collapsible, mobile overlay)
  * - TopBar (page context, user info, role)
@@ -38,8 +37,10 @@ export function AppShell({
     setMobileOpen(false);
   };
 
+  const marginClasses = collapsed ? 'lg:ml-[72px]' : 'lg:ml-[260px]';
+
   return (
-    <div className={`app-shell ${className}`.trim()}>
+    <div className={`flex min-h-screen bg-slate-50 text-slate-900 ${className}`.trim()}>
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={handleToggleCollapse}
@@ -50,11 +51,7 @@ export function AppShell({
         sections={sidebarSections}
       />
 
-      <div
-        className={`app-shell__body ${
-          collapsed ? 'app-shell__body--collapsed' : ''
-        }`}
-      >
+      <div className={`flex-1 flex flex-col min-w-0 min-h-screen transition-all duration-200 ml-0 ${marginClasses}`}>
         <TopBar
           pageContext={pageContext}
           pageSubtitle={pageSubtitle}

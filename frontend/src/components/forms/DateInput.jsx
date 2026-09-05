@@ -3,7 +3,7 @@ import { Calendar } from 'lucide-react';
 import { Input } from './Input';
 
 /**
- * Reusable DateInput Component
+ * Reusable DateInput Component with Tailwind CSS
  */
 export function DateInput({
   id,

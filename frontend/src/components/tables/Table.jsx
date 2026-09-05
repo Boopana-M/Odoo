@@ -5,10 +5,9 @@ import { TableCell } from './TableCell';
 import { EmptyState } from '../ui/EmptyState';
 import { SectionError } from '../ui/ErrorState';
 import { Skeleton } from '../ui/LoadingState';
-import './Table.css';
 
 /**
- * Reusable Table Component
+ * Reusable Table Component with Tailwind CSS
  * Supports: columns, data, loading state, empty state, error state, pagination footer
  */
 export function Table({
@@ -26,14 +25,14 @@ export function Table({
   const colCount = columns.length || 5;
 
   return (
-    <div className={`table-container ${wrapperClassName}`.trim()}>
-      <div className="table-wrapper">
-        <table className={`table ${className}`.trim()}>
+    <div className={`w-full bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden ${wrapperClassName}`.trim()}>
+      <div className="w-full overflow-x-auto">
+        <table className={`w-full border-collapse text-left text-sm text-slate-900 ${className}`.trim()}>
           {columns.length > 0 && <TableHeader columns={columns} />}
-          <tbody className="table-tbody">
+          <tbody className="bg-white divide-y divide-slate-100">
             {error ? (
               <TableRow>
-                <TableCell colSpan={colCount} className="table-state-cell">
+                <TableCell colSpan={colCount} className="p-8 text-center">
                   <SectionError
                     title="Failed to load table data"
                     message={typeof error === 'string' ? error : error.message}
@@ -46,7 +45,7 @@ export function Table({
                 <TableRow key={rIdx}>
                   {Array.from({ length: colCount }).map((_, cIdx) => (
                     <TableCell key={cIdx}>
-                      <Skeleton className="skeleton--text" style={{ width: `${60 + ((cIdx * 15) % 35)}%` }} />
+                      <Skeleton className="h-4" style={{ width: `${60 + ((cIdx * 15) % 35)}%` }} />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -55,7 +54,7 @@ export function Table({
               children
             ) : (
               <TableRow>
-                <TableCell colSpan={colCount} className="table-state-cell">
+                <TableCell colSpan={colCount} className="p-8 text-center">
                   {emptyState || (
                     <EmptyState
                       title="No records found"
@@ -69,7 +68,11 @@ export function Table({
           </tbody>
         </table>
       </div>
-      {footer && <div className="table-footer">{footer}</div>}
+      {footer && (
+        <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+          {footer}
+        </div>
+      )}
     </div>
   );
 }

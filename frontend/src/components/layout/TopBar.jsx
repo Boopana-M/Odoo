@@ -1,9 +1,8 @@
 import React from 'react';
 import { Menu } from 'lucide-react';
-import './TopBar.css';
 
 /**
- * Reusable Top Navigation Component
+ * Reusable Top Navigation Component with Tailwind CSS
  * Supports: context/page area, user profile area with role display, mobile menu toggle
  */
 export function TopBar({
@@ -18,12 +17,12 @@ export function TopBar({
   className = '',
 }) {
   return (
-    <header className={`topbar ${className}`.trim()}>
-      <div className="topbar__left">
+    <header className={`h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30 transition-all ${className}`.trim()}>
+      <div className="flex items-center gap-3 md:gap-4">
         {onToggleMobile && (
           <button
             type="button"
-            className="topbar__mobile-toggle"
+            className="lg:hidden text-slate-600 hover:text-slate-900 hover:bg-slate-100 p-1.5 rounded transition-colors flex items-center justify-center"
             onClick={onToggleMobile}
             aria-label="Toggle navigation menu"
           >
@@ -31,24 +30,24 @@ export function TopBar({
           </button>
         )}
 
-        <div className="topbar__context">
-          <span className="topbar__context-title">{pageContext}</span>
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold text-slate-900">{pageContext}</span>
           {pageSubtitle && (
-            <span className="topbar__context-subtitle">{pageSubtitle}</span>
+            <span className="text-xs text-slate-500">{pageSubtitle}</span>
           )}
         </div>
       </div>
 
-      <div className="topbar__right">
+      <div className="flex items-center gap-4">
         {user && (
-          <div className="topbar__user">
-            <div className="topbar__avatar" aria-hidden="true">
+          <div className="flex items-center gap-3 select-none">
+            <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-semibold text-xs shrink-0" aria-hidden="true">
               {user.initials || (user.name ? user.name.slice(0, 2).toUpperCase() : 'U')}
             </div>
-            <div className="topbar__user-info">
-              <span className="topbar__user-name">{user.name || 'User'}</span>
+            <div className="hidden sm:flex flex-col leading-tight">
+              <span className="text-sm font-medium text-slate-900">{user.name || 'User'}</span>
               {user.role && (
-                <span className="topbar__user-role">{user.role}</span>
+                <span className="text-xs text-slate-500">{user.role}</span>
               )}
             </div>
           </div>

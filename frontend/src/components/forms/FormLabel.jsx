@@ -1,8 +1,7 @@
 import React from 'react';
-import './Form.css';
 
 /**
- * Reusable FormLabel Component
+ * Reusable FormLabel Component with Tailwind CSS
  */
 export function FormLabel({
   children,
@@ -14,10 +13,10 @@ export function FormLabel({
   if (!children) return null;
 
   return (
-    <label htmlFor={htmlFor} className={`form-label ${className}`.trim()}>
+    <label htmlFor={htmlFor} className={`inline-flex items-center text-sm font-medium text-slate-900 mb-1 ${className}`.trim()}>
       {children}
-      {required && <span className="form-label__required" aria-hidden="true">*</span>}
-      {optional && <span className="form-label__optional">(Optional)</span>}
+      {required && <span className="text-red-600 ml-1 font-bold" aria-hidden="true">*</span>}
+      {optional && <span className="text-slate-400 text-xs font-normal ml-1">(Optional)</span>}
     </label>
   );
 }

@@ -1,8 +1,7 @@
 import React from 'react';
-import './Table.css';
 
 /**
- * Reusable TableRow Component
+ * Reusable TableRow Component with Tailwind CSS
  * Supports: normal, hover, selected states, onClick
  */
 export function TableRow({
@@ -12,9 +11,13 @@ export function TableRow({
   className = '',
   ...props
 }) {
+  const rowClasses = selected
+    ? 'bg-blue-50/60 hover:bg-blue-50 border-b border-slate-100 last:border-b-0 transition-colors'
+    : 'border-b border-slate-100 last:border-b-0 hover:bg-slate-50/80 transition-colors';
+
   return (
     <tr
-      className={`table-row ${selected ? 'table-row--selected' : ''} ${className}`.trim()}
+      className={`${rowClasses} ${onClick ? 'cursor-pointer' : ''} ${className}`.trim()}
       onClick={onClick}
       {...props}
     >

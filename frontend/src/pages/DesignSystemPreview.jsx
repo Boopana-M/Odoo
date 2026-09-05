@@ -6,11 +6,8 @@ import {
   Trash2,
   Edit2,
   CheckCircle,
-  Clock,
   User,
   Mail,
-  Lock,
-  Building,
 } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Button } from '../components/ui/Button';
@@ -18,8 +15,8 @@ import { StatusBadge } from '../components/ui/StatusBadge';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { EmptyState } from '../components/ui/EmptyState';
-import { Spinner, Skeleton, CardSkeleton, TableSkeleton } from '../components/ui/LoadingState';
-import { PageError, SectionError, InlineError } from '../components/ui/ErrorState';
+import { CardSkeleton } from '../components/ui/LoadingState';
+import { SectionError, InlineError } from '../components/ui/ErrorState';
 
 import { FormField } from '../components/forms/FormField';
 import { Input } from '../components/forms/Input';
@@ -30,16 +27,13 @@ import { Checkbox } from '../components/forms/Checkbox';
 import { Radio } from '../components/forms/Radio';
 
 import { Table } from '../components/tables/Table';
-import { TableHeader } from '../components/tables/TableHeader';
 import { TableRow } from '../components/tables/TableRow';
 import { TableCell } from '../components/tables/TableCell';
 import { StatusCell } from '../components/tables/StatusCell';
 import { ActionCell } from '../components/tables/ActionCell';
 
-import './DesignSystemPreview.css';
-
 /**
- * Design System Demo / Preview Page
+ * Design System Demo / Preview Page with Tailwind CSS
  * Demonstrates all reusable Phase 1 components with static example data
  */
 export function DesignSystemPreview() {
@@ -107,7 +101,7 @@ export function DesignSystemPreview() {
   ];
 
   return (
-    <div className="ds-preview">
+    <div className="flex flex-col gap-8 pb-12">
       {/* 1. Page Header Component */}
       <PageHeader
         title="UI Design System & Component Library"
@@ -138,51 +132,51 @@ export function DesignSystemPreview() {
       />
 
       {/* 2. Design Tokens: Colors & Typography */}
-      <section className="ds-section">
-        <div className="ds-section__header">
-          <h2 className="ds-section__title">1. Design Tokens & Palette</h2>
-          <p className="ds-section__description">Standardized colors, enterprise neutral shades, and semantic status colors.</p>
+      <section className="flex flex-col gap-4">
+        <div className="border-b border-slate-200 pb-2">
+          <h2 className="text-lg font-semibold text-slate-900">1. Design Tokens & Palette</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Standardized colors, enterprise neutral shades, and semantic status colors.</p>
         </div>
 
-        <div className="ds-token-group">
-          <span className="ds-token-label">Brand & Neutrals</span>
-          <div className="ds-color-swatch-list">
-            <div className="ds-color-swatch">
-              <div className="ds-color-box" style={{ backgroundColor: '#0f172a' }} />
-              <span className="ds-color-name">Slate 900</span>
-              <span className="ds-color-hex">#0f172a</span>
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Brand & Neutrals</span>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-1 w-[90px]">
+              <div className="w-full h-11 rounded-md border border-slate-200 bg-slate-900" />
+              <span className="text-[11px] font-medium text-slate-700">Slate 900</span>
+              <span className="text-[10px] text-slate-400">#0f172a</span>
             </div>
-            <div className="ds-color-swatch">
-              <div className="ds-color-box" style={{ backgroundColor: '#1e293b' }} />
-              <span className="ds-color-name">Slate 800</span>
-              <span className="ds-color-hex">#1e293b</span>
+            <div className="flex flex-col gap-1 w-[90px]">
+              <div className="w-full h-11 rounded-md border border-slate-200 bg-slate-800" />
+              <span className="text-[11px] font-medium text-slate-700">Slate 800</span>
+              <span className="text-[10px] text-slate-400">#1e293b</span>
             </div>
-            <div className="ds-color-swatch">
-              <div className="ds-color-box" style={{ backgroundColor: '#2563eb' }} />
-              <span className="ds-color-name">Primary 600</span>
-              <span className="ds-color-hex">#2563eb</span>
+            <div className="flex flex-col gap-1 w-[90px]">
+              <div className="w-full h-11 rounded-md border border-slate-200 bg-blue-600" />
+              <span className="text-[11px] font-medium text-slate-700">Blue 600</span>
+              <span className="text-[10px] text-slate-400">#2563eb</span>
             </div>
-            <div className="ds-color-swatch">
-              <div className="ds-color-box" style={{ backgroundColor: '#64748b' }} />
-              <span className="ds-color-name">Slate 500</span>
-              <span className="ds-color-hex">#64748b</span>
+            <div className="flex flex-col gap-1 w-[90px]">
+              <div className="w-full h-11 rounded-md border border-slate-200 bg-slate-500" />
+              <span className="text-[11px] font-medium text-slate-700">Slate 500</span>
+              <span className="text-[10px] text-slate-400">#64748b</span>
             </div>
-            <div className="ds-color-swatch">
-              <div className="ds-color-box" style={{ backgroundColor: '#f1f5f9' }} />
-              <span className="ds-color-name">Slate 100</span>
-              <span className="ds-color-hex">#f1f5f9</span>
+            <div className="flex flex-col gap-1 w-[90px]">
+              <div className="w-full h-11 rounded-md border border-slate-200 bg-slate-100" />
+              <span className="text-[11px] font-medium text-slate-700">Slate 100</span>
+              <span className="text-[10px] text-slate-400">#f1f5f9</span>
             </div>
-            <div className="ds-color-swatch">
-              <div className="ds-color-box" style={{ backgroundColor: '#ffffff' }} />
-              <span className="ds-color-name">White</span>
-              <span className="ds-color-hex">#ffffff</span>
+            <div className="flex flex-col gap-1 w-[90px]">
+              <div className="w-full h-11 rounded-md border border-slate-200 bg-white" />
+              <span className="text-[11px] font-medium text-slate-700">White</span>
+              <span className="text-[10px] text-slate-400">#ffffff</span>
             </div>
           </div>
         </div>
 
-        <div className="ds-token-group">
-          <span className="ds-token-label">Semantic Status Badges</span>
-          <div className="ds-row">
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Semantic Status Badges</span>
+          <div className="flex items-center flex-wrap gap-3">
             <StatusBadge status="Active" />
             <StatusBadge status="Inactive" />
             <StatusBadge status="Pending" />
@@ -195,15 +189,15 @@ export function DesignSystemPreview() {
       </section>
 
       {/* 3. Button System */}
-      <section className="ds-section">
-        <div className="ds-section__header">
-          <h2 className="ds-section__title">2. Button System</h2>
-          <p className="ds-section__description">Primary, secondary, outline, destructive, ghost variants across sm, md, lg sizes and loading states.</p>
+      <section className="flex flex-col gap-4">
+        <div className="border-b border-slate-200 pb-2">
+          <h2 className="text-lg font-semibold text-slate-900">2. Button System</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Primary, secondary, outline, destructive, ghost variants across sm, md, lg sizes and loading states.</p>
         </div>
 
-        <div className="ds-token-group">
-          <span className="ds-token-label">Button Variants</span>
-          <div className="ds-row">
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Button Variants</span>
+          <div className="flex items-center flex-wrap gap-3">
             <Button variant="primary">Primary</Button>
             <Button variant="secondary">Secondary</Button>
             <Button variant="outline">Outline</Button>
@@ -212,18 +206,18 @@ export function DesignSystemPreview() {
           </div>
         </div>
 
-        <div className="ds-token-group">
-          <span className="ds-token-label">Button Sizes</span>
-          <div className="ds-row">
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Button Sizes</span>
+          <div className="flex items-center flex-wrap gap-3">
             <Button variant="primary" size="sm">Small (32px)</Button>
             <Button variant="primary" size="md">Medium (38px)</Button>
             <Button variant="primary" size="lg">Large (44px)</Button>
           </div>
         </div>
 
-        <div className="ds-token-group">
-          <span className="ds-token-label">Button States & Icons</span>
-          <div className="ds-row">
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Button States & Icons</span>
+          <div className="flex items-center flex-wrap gap-3">
             <Button variant="primary" leftIcon={<Plus size={15} />}>With Left Icon</Button>
             <Button variant="outline" rightIcon={<Download size={15} />}>With Right Icon</Button>
             <Button variant="primary" loading>Loading State</Button>
@@ -234,13 +228,13 @@ export function DesignSystemPreview() {
       </section>
 
       {/* 4. Form Components */}
-      <section className="ds-section">
-        <div className="ds-section__header">
-          <h2 className="ds-section__title">3. Form Components</h2>
-          <p className="ds-section__description">Accessible inputs, selects, date pickers, textareas, checkboxes, and radio buttons with validation.</p>
+      <section className="flex flex-col gap-4">
+        <div className="border-b border-slate-200 pb-2">
+          <h2 className="text-lg font-semibold text-slate-900">3. Form Components</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Accessible inputs, selects, date pickers, textareas, checkboxes, and radio buttons with validation.</p>
         </div>
 
-        <div className="ds-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card title="Text & Number Inputs" description="Standard inputs with icons, helper text, and error states">
             <FormField label="Full Name" htmlFor="demo-name" required helperText="Enter first and last name.">
               <Input id="demo-name" placeholder="e.g. John Doe" leftIcon={<User size={16} />} />
@@ -288,16 +282,16 @@ export function DesignSystemPreview() {
               <Textarea id="demo-notes" placeholder="Add optional remarks..." rows={3} />
             </FormField>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
-              <span className="text-label">System Permissions</span>
+            <div className="flex flex-col gap-3 mt-2">
+              <span className="text-sm font-medium text-slate-900">System Permissions</span>
               <Checkbox id="chk-1" label="Grant HR Administrator Access" description="Allows managing all employee records and schedules" defaultChecked />
               <Checkbox id="chk-2" label="Send automatic notifications" description="Email notifications on approval requests" />
               <Checkbox id="chk-3" label="Restricted Option" disabled description="Disabled option in current role" />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
-              <span className="text-label">Contract Type</span>
-              <div className="ds-row">
+            <div className="flex flex-col gap-3 mt-4">
+              <span className="text-sm font-medium text-slate-900">Contract Type</span>
+              <div className="flex items-center flex-wrap gap-3">
                 <Radio id="rad-1" name="contract-type" value="permanent" label="Permanent" defaultChecked />
                 <Radio id="rad-2" name="contract-type" value="contract" label="Fixed Term" />
                 <Radio id="rad-3" name="contract-type" value="intern" label="Internship" />
@@ -308,14 +302,14 @@ export function DesignSystemPreview() {
       </section>
 
       {/* 5. Table System */}
-      <section className="ds-section">
-        <div className="ds-section__header">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+      <section className="flex flex-col gap-4">
+        <div className="border-b border-slate-200 pb-2">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h2 className="ds-section__title">4. Table System</h2>
-              <p className="ds-section__description">Interactive data table with normal, hover, selected row, loading skeleton, empty, and error states.</p>
+              <h2 className="text-lg font-semibold text-slate-900">4. Table System</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Interactive data table with normal, hover, selected row, loading skeleton, empty, and error states.</p>
             </div>
-            <div className="ds-row">
+            <div className="flex items-center flex-wrap gap-2">
               <Button
                 size="sm"
                 variant={tableState === 'normal' ? 'primary' : 'outline'}
@@ -356,7 +350,7 @@ export function DesignSystemPreview() {
           footer={
             <>
               <span>Showing 5 of 5 preview records</span>
-              <div className="ds-row">
+              <div className="flex items-center gap-2">
                 <Button size="sm" variant="outline" disabled>Previous</Button>
                 <Button size="sm" variant="outline" disabled>Next</Button>
               </div>
@@ -370,10 +364,10 @@ export function DesignSystemPreview() {
                 selected={selectedRowId === row.id}
                 onClick={() => setSelectedRowId(row.id)}
               >
-                <TableCell style={{ fontWeight: 600, color: 'var(--color-primary-600)' }}>
+                <TableCell className="font-semibold text-blue-600">
                   {row.code}
                 </TableCell>
-                <TableCell style={{ fontWeight: 500 }}>{row.name}</TableCell>
+                <TableCell className="font-medium">{row.name}</TableCell>
                 <TableCell>{row.department}</TableCell>
                 <TableCell>{row.role}</TableCell>
                 <StatusCell status={row.status} />
@@ -383,7 +377,7 @@ export function DesignSystemPreview() {
                     <Edit2 size={14} />
                   </Button>
                   <Button variant="ghost" size="sm" aria-label="Delete item">
-                    <Trash2 size={14} color="var(--color-danger-600)" />
+                    <Trash2 size={14} className="text-red-600" />
                   </Button>
                 </ActionCell>
               </TableRow>
@@ -393,13 +387,13 @@ export function DesignSystemPreview() {
       </section>
 
       {/* 6. Card Components */}
-      <section className="ds-section">
-        <div className="ds-section__header">
-          <h2 className="ds-section__title">5. Card System</h2>
-          <p className="ds-section__description">Clean and compact enterprise cards for summary panels, forms, and detail views.</p>
+      <section className="flex flex-col gap-4">
+        <div className="border-b border-slate-200 pb-2">
+          <h2 className="text-lg font-semibold text-slate-900">5. Card System</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Clean and compact enterprise cards for summary panels, forms, and detail views.</p>
         </div>
 
-        <div className="ds-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card
             title="Department Overview"
             description="Engineering & Technical Services"
@@ -411,7 +405,7 @@ export function DesignSystemPreview() {
               </>
             }
           >
-            <p className="text-body" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-sm text-slate-600">
               Primary software engineering and systems development department for enterprise HR and operations.
             </p>
           </Card>
@@ -422,14 +416,14 @@ export function DesignSystemPreview() {
             action={<Button size="sm" variant="outline">Edit Policy</Button>}
             footer={<span>Assigned to 48 contracts</span>}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-sm)' }}>
-                <span className="text-secondary">Working Days:</span>
-                <span style={{ fontWeight: 500 }}>Monday – Friday</span>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Working Days:</span>
+                <span className="font-medium text-slate-900">Monday – Friday</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-sm)' }}>
-                <span className="text-secondary">Standard Hours:</span>
-                <span style={{ fontWeight: 500 }}>09:00 – 17:00</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Standard Hours:</span>
+                <span className="font-medium text-slate-900">09:00 – 17:00</span>
               </div>
             </div>
           </Card>
@@ -437,13 +431,13 @@ export function DesignSystemPreview() {
       </section>
 
       {/* 7. Loading, Error, & Empty States */}
-      <section className="ds-section">
-        <div className="ds-section__header">
-          <h2 className="ds-section__title">6. States (Loading, Error, & Empty)</h2>
-          <p className="ds-section__description">Standardized feedback patterns for async network states, loading indicators, and alerts.</p>
+      <section className="flex flex-col gap-4">
+        <div className="border-b border-slate-200 pb-2">
+          <h2 className="text-lg font-semibold text-slate-900">6. States (Loading, Error, & Empty)</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Standardized feedback patterns for async network states, loading indicators, and alerts.</p>
         </div>
 
-        <div className="ds-grid">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card title="Section Error Banner" description="Used inside cards or above forms on failure">
             <SectionError
               title="Failed to synchronize record"
@@ -492,7 +486,7 @@ export function DesignSystemPreview() {
           </>
         }
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="flex flex-col gap-4">
           <FormField label="Record Name" htmlFor="modal-name" required>
             <Input id="modal-name" placeholder="Enter title or name" />
           </FormField>

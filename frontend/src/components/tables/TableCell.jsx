@@ -1,8 +1,7 @@
 import React from 'react';
-import './Table.css';
 
 /**
- * Reusable TableCell Component
+ * Reusable TableCell Component with Tailwind CSS
  */
 export function TableCell({
   children,
@@ -12,12 +11,12 @@ export function TableCell({
   colSpan,
   ...props
 }) {
-  const alignClass = align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : '';
-  const truncateClass = truncate ? 'table-td--truncate' : '';
+  const alignClass = align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
+  const truncateClass = truncate ? 'max-w-[200px] truncate' : '';
 
   return (
     <td
-      className={`table-td ${alignClass} ${truncateClass} ${className}`.trim()}
+      className={`px-4 py-3 text-sm text-slate-900 align-middle ${alignClass} ${truncateClass} ${className}`.trim()}
       colSpan={colSpan}
       {...props}
     >
