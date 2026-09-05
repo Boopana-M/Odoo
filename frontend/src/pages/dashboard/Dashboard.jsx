@@ -10,7 +10,12 @@ import {
   CheckCircle,
   TrendingUp,
   Building,
-  Briefcase
+  Briefcase,
+  Bell,
+  X,
+  ChevronRight,
+  ArrowRight,
+  Info
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -57,6 +62,9 @@ export function Dashboard() {
   const [periodEnd, setPeriodEnd] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   const [employeeType, setEmployeeType] = useState('');
+
+  // Alerts Slide-Over Drawer State
+  const [isAlertDrawerOpen, setIsAlertDrawerOpen] = useState(false);
 
   // Data
   const [departments, setDepartments] = useState([]);
@@ -181,6 +189,59 @@ export function Dashboard() {
             </p>
           </div>
         </div>
+
+        {/* Top Notice Action Button */}
+        <div className="page-actions">
+          {alerts && alerts.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setIsAlertDrawerOpen(true)}
+              className="btn btn-sm"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: '#FEF3C7',
+                border: '1px solid #FDE68A',
+                color: '#92400E',
+                fontWeight: 600,
+                borderRadius: '9999px',
+                padding: '0.45rem 0.95rem',
+                boxShadow: '0 2px 6px rgba(217, 119, 6, 0.15)',
+                cursor: 'pointer'
+              }}
+              title="View Action Items & Alerts"
+            >
+              <span style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <Bell size={16} color="#D97706" />
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: -3,
+                    right: -3,
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: '#DC2626',
+                    border: '2px solid #FEF3C7'
+                  }}
+                />
+              </span>
+              <span>{alerts.length} Pending Action{alerts.length > 1 ? 's' : ''}</span>
+              <ChevronRight size={14} color="#92400E" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsAlertDrawerOpen(true)}
+              className="btn btn-secondary btn-sm"
+              style={{ borderRadius: '9999px', gap: '0.4rem' }}
+            >
+              <Bell size={15} color="var(--text-muted)" />
+              <span>0 Alerts</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filters Bar */}
@@ -243,24 +304,6 @@ export function Dashboard() {
           </button>
         )}
       </div>
-
-      {/* Operational Alerts Row */}
-      {alerts && alerts.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          {alerts.map((alt, idx) => (
-            <div
-              key={idx}
-              className={`alert-banner ${alt.level === 'CRITICAL' ? 'alert-danger' : alt.level === 'WARNING' ? 'alert-warning' : 'alert-info'}`}
-              style={{ margin: 0 }}
-            >
-              <AlertTriangle size={18} />
-              <div style={{ flex: 1 }}>
-                <strong>{alt.title}:</strong> {alt.message}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Signature Payroll Health & Readiness Section */}
       <div className="card" style={{ marginBottom: '1.5rem', background: '#ffffff', border: '1px solid var(--border)' }}>
@@ -481,6 +524,144 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Sliding System Alerts & Action Items Drawer */}
+      {isAlertDrawerOpen && (
+        <div className="drawer-overlay" onClick={() => setIsAlertDrawerOpen(false)}>
+          <div className="drawer-content" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{ background: '#FEF3C7', padding: '6px', borderRadius: '8px', display: 'flex' }}>
+                  <Bell size={18} color="#D97706" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                    Action Items & Alerts
+                  </h3>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {alerts.length} pending item{alerts.length !== 1 ? 's' : ''} requiring review
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAlertDrawerOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}
+                title="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="drawer-body">
+              {alerts && alerts.length > 0 ? (
+                alerts.map((alt, idx) => {
+                  const isWarning = alt.level === 'WARNING';
+                  const isCritical = alt.level === 'CRITICAL';
+                  const isPayrun = alt.title?.toLowerCase().includes('pay run') || alt.title?.toLowerCase().includes('payroll');
+                  const isTimeOff = alt.title?.toLowerCase().includes('time off') || alt.title?.toLowerCase().includes('leave');
+
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#ffffff',
+                        border: `1px solid ${isCritical ? '#FECACA' : isWarning ? '#FDE68A' : '#BAE6FD'}`,
+                        borderLeft: `4px solid ${isCritical ? '#DC2626' : isWarning ? '#D97706' : '#0284C7'}`,
+                        borderRadius: '8px',
+                        padding: '1rem',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.04)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.5rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                          {isCritical ? (
+                            <AlertTriangle size={16} color="#DC2626" />
+                          ) : isWarning ? (
+                            <AlertTriangle size={16} color="#D97706" />
+                          ) : (
+                            <Info size={16} color="#0284C7" />
+                          )}
+                          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>
+                            {alt.title}
+                          </span>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontWeight: 700,
+                            background: isCritical ? '#FEE2E2' : isWarning ? '#FEF3C7' : '#E0F2FE',
+                            color: isCritical ? '#991B1B' : isWarning ? '#92400E' : '#0369A1'
+                          }}
+                        >
+                          {alt.level || 'ACTION'}
+                        </span>
+                      </div>
+
+                      <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                        {alt.message}
+                      </p>
+
+                      <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                        {isPayrun ? (
+                          <a
+                            href="/payroll/payruns"
+                            className="btn btn-primary btn-sm"
+                            style={{ fontSize: '0.75rem', padding: '0.35rem 0.8rem' }}
+                            onClick={() => setIsAlertDrawerOpen(false)}
+                          >
+                            <Briefcase size={14} /> Review Payruns <ArrowRight size={13} />
+                          </a>
+                        ) : isTimeOff ? (
+                          <a
+                            href="/time-off/requests"
+                            className="btn btn-primary btn-sm"
+                            style={{ fontSize: '0.75rem', padding: '0.35rem 0.8rem' }}
+                            onClick={() => setIsAlertDrawerOpen(false)}
+                          >
+                            <Calendar size={14} /> Review Requests <ArrowRight size={13} />
+                          </a>
+                        ) : (
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            style={{ fontSize: '0.75rem', padding: '0.35rem 0.8rem' }}
+                            onClick={() => setIsAlertDrawerOpen(false)}
+                          >
+                            Dismiss
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-muted)' }}>
+                  <CheckCircle size={40} color="#16A34A" style={{ margin: '0 auto 1rem' }} />
+                  <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                    All Systems Operational
+                  </h4>
+                  <p style={{ fontSize: '0.825rem' }}>No pending alerts or urgent actions required at this moment.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="drawer-footer">
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setIsAlertDrawerOpen(false)}
+              >
+                Close Drawer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
