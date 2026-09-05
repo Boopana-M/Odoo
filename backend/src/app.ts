@@ -15,6 +15,7 @@ import timeOffRequestRoutes from './modules/timeoff/request/request.routes';
 import salaryStructureRoutes from './modules/salary/structure/structure.routes';
 import salaryRuleRoutes from './modules/salary/rule/rule.routes';
 import payrunRoutes from './modules/payrun/payrun.routes';
+import payslipRoutes from './modules/payslip/payslip.routes';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -59,6 +60,10 @@ app.use('/api/salary-rule', salaryRuleRoutes);
 // Payruns
 app.use('/api/payruns', payrunRoutes);
 app.use('/api/payrun', payrunRoutes);
+
+// Payslips
+app.use('/api/payslips', payslipRoutes);
+app.use('/api/payslip', payslipRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

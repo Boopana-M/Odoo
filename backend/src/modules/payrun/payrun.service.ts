@@ -9,6 +9,7 @@ import {
 import { SalaryStructure } from '../salary/structure/structure.model';
 import { Employee, IEmployee } from '../employees/employee.model';
 import { Contract } from '../contracts/contract.model';
+import { payslipService } from '../payslip/payslip.service';
 
 export class PayrunService {
   async getEligibleEmployees(
@@ -390,12 +391,16 @@ export class PayrunService {
       throw error;
     }
 
-    payrun.status = 'Computed';
-    await payrun.save();
+    // Generate/update payslips for all selected employees
+    await payslipService.generatePayrunPayslips(payrun);
 
     return (await Payrun.findById(id)
       .populate('salaryStructureId', 'name code')
-      .populate('employeeIds', 'firstName lastName employeeCode email jobPosition')) as IPayrun;
+      .populate('employeeIds', 'firstName lastName employeeCode email jobPosition')
+      .populate({
+        path: 'payslipIds',
+        populate: { path: 'employeeId', select: 'firstName lastName employeeCode email jobPosition' }
+      })) as IPayrun;
   }
 
   async validatePayrun(id: string): Promise<IPayrun> {

@@ -11,6 +11,9 @@ import { TimeOffAllocation } from '../modules/timeoff/allocation/timeoff-allocat
 import { TimeOffRequest } from '../modules/timeoff/request/request.model';
 import { SalaryStructure } from '../modules/salary/structure/structure.model';
 import { SalaryRule } from '../modules/salary/rule/rule.model';
+import { Payrun } from '../modules/payrun/payrun.model';
+import { Payslip, PayslipLine } from '../modules/payslip/payslip.model';
+import { payslipService } from '../modules/payslip/payslip.service';
 
 dotenv.config();
 
@@ -26,7 +29,10 @@ async function seedDatabase() {
   console.log('✓ Connected to MongoDB:', mongoUri);
 
   // Clear existing collections
-  console.log('\n[1/10] Cleaning existing collections...');
+  console.log('\n[1/11] Cleaning existing collections...');
+  await PayslipLine.deleteMany({});
+  await Payslip.deleteMany({});
+  await Payrun.deleteMany({});
   await SalaryRule.deleteMany({});
   await SalaryStructure.deleteMany({});
   await TimeOffRequest.deleteMany({});
@@ -535,6 +541,21 @@ async function seedDatabase() {
     status: 'Pending'
   });
   console.log(`✓ Seeded 3 time off allocations and 2 requests`);
+
+  // 10. Payruns & Payslips
+  console.log('\n[11/11] Seeding Payruns & Computing Payslips...');
+  const octoberPayrun = await Payrun.create({
+    name: 'October 2026 Standard Payrun',
+    salaryStructureId: standardStructure._id,
+    periodStart: new Date('2026-10-01'),
+    periodEnd: new Date('2026-10-31'),
+    employeeIds: [janeSmithStaff._id, robertJohnsonHR._id, emilyDavisFinance._id, michaelBrownSales._id],
+    status: 'Draft'
+  });
+
+  // Dynamically compute payslips for the payrun
+  const seededPayslips = await payslipService.generatePayrunPayslips(octoberPayrun);
+  console.log(`✓ Seeded 1 Payrun and generated ${seededPayslips.length} computed Payslips with detailed rule breakdown`);
 
   console.log('\n=====================================================');
   console.log('🎉 SAMPLE DATA SEEDING COMPLETE! 🎉');
