@@ -8,8 +8,8 @@ import { Button } from '../components/ui/Button';
 import { DesignSystemPreview } from './DesignSystemPreview';
 
 /**
- * Role-Based Application Landing & Navigation Placeholder
- * Displays active role permissions and architectural readiness without fake business screens.
+ * Role-Based Application Landing & Navigation Overview
+ * Displays active role permissions and system overview.
  */
 export function RoleLanding({ activeNavItem }) {
   const { user } = useAuth();
@@ -104,7 +104,7 @@ export function RoleLanding({ activeNavItem }) {
                   <span className="font-medium text-white">{user?.role}</span>).
                 </p>
                 <p className="text-slate-400">
-                  Business data operations for this module are scheduled for subsequent phases. No fake data or mock APIs are created in Phase 2.
+                  Select an active module from the sidebar to manage live records and business operations in PeoplePay360.
                 </p>
               </div>
             </div>
