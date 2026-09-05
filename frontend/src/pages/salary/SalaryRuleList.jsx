@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, Layers, Filter } from 'lucide-react';
+import { Settings, Plus, Layers, Filter, Edit2, Trash2 } from 'lucide-react';
 import { salaryApi } from '../../api/salaryApi';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -32,6 +33,13 @@ export function SalaryRuleList() {
     formulaExpression: '',
     isActive: true
   });
+
+  // Edit Modal State
+  const [editingRule, setEditingRule] = useState(null);
+
+  // Delete Confirmation State
+  const [deleteRuleId, setDeleteRuleId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -72,9 +80,79 @@ export function SalaryRuleList() {
       await salaryApi.createRule(payload);
       success('Salary rule created successfully');
       setIsCreateOpen(false);
+      setNewRule({
+        salaryStructureId: '',
+        name: '',
+        code: '',
+        category: 'Basic',
+        sequence: 10,
+        computationMethod: 'Percentage',
+        amount: '',
+        percentage: '',
+        formulaExpression: '',
+        isActive: true
+      });
       fetchData();
     } catch (err) {
       error(err.message || 'Failed to create salary rule');
+    }
+  };
+
+  const handleOpenEdit = (rule) => {
+    setEditingRule({
+      _id: rule._id,
+      salaryStructureId: rule.salaryStructureId?._id || rule.salaryStructureId || '',
+      name: rule.name || '',
+      code: rule.code || '',
+      category: rule.category || 'Basic',
+      sequence: rule.sequence || 10,
+      computationMethod: rule.computationMethod || 'Percentage',
+      amount: rule.amount ?? '',
+      percentage: rule.percentage ?? '',
+      formulaExpression: rule.formulaExpression || '',
+      isActive: rule.isActive !== false
+    });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!editingRule) return;
+
+    try {
+      const payload = {
+        salaryStructureId: editingRule.salaryStructureId,
+        name: editingRule.name,
+        code: editingRule.code.toUpperCase(),
+        category: editingRule.category,
+        sequence: Number(editingRule.sequence),
+        computationMethod: editingRule.computationMethod,
+        amount: editingRule.computationMethod === 'Fixed' ? Number(editingRule.amount) : null,
+        percentage: editingRule.computationMethod === 'Percentage' ? Number(editingRule.percentage) : null,
+        formulaExpression: editingRule.computationMethod === 'Formula' ? editingRule.formulaExpression : null,
+        isActive: editingRule.isActive
+      };
+
+      await salaryApi.updateRule(editingRule._id, payload);
+      success('Salary rule updated successfully');
+      setEditingRule(null);
+      fetchData();
+    } catch (err) {
+      error(err.message || 'Failed to update salary rule');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteRuleId) return;
+    setDeleteLoading(true);
+    try {
+      await salaryApi.deleteRule(deleteRuleId);
+      success('Salary rule deleted successfully');
+      setDeleteRuleId(null);
+      fetchData();
+    } catch (err) {
+      error(err.message || 'Failed to delete salary rule');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -153,6 +231,7 @@ export function SalaryRuleList() {
               <th>Method</th>
               <th>Computation Definition</th>
               <th>Status</th>
+              {isPayrollManager && <th style={{ textAlign: 'right' }}>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -180,6 +259,30 @@ export function SalaryRuleList() {
                   {r.computationMethod === 'Formula' && (r.formulaExpression || '-')}
                 </td>
                 <td><StatusBadge status={r.isActive ? 'Active' : 'Inactive'} /></td>
+                {isPayrollManager && (
+                  <td style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => handleOpenEdit(r)}
+                        title="Edit Salary Rule"
+                        style={{ padding: '0.3rem 0.55rem' }}
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => setDeleteRuleId(r._id)}
+                        title="Delete Salary Rule"
+                        style={{ padding: '0.3rem 0.55rem' }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -336,6 +439,171 @@ export function SalaryRuleList() {
           )}
         </form>
       </Modal>
+
+      {/* Modal: Edit Salary Rule */}
+      {editingRule && (
+        <Modal
+          isOpen={!!editingRule}
+          onClose={() => setEditingRule(null)}
+          title={`Edit Salary Rule — ${editingRule.name}`}
+          size="lg"
+          footer={
+            <>
+              <button className="btn btn-secondary" onClick={() => setEditingRule(null)}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleUpdate}>
+                Save Changes
+              </button>
+            </>
+          }
+        >
+          <form onSubmit={handleUpdate} className="form-grid">
+            <div className="form-group full-width">
+              <label className="form-label required">Parent Salary Structure</label>
+              <select
+                className="form-control"
+                value={editingRule.salaryStructureId}
+                onChange={(e) => setEditingRule({ ...editingRule, salaryStructureId: e.target.value })}
+                required
+              >
+                <option value="">Select Salary Structure</option>
+                {structures.map((s) => (
+                  <option key={s._id} value={s._id}>{s.name} ({s.code})</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label required">Rule Name</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingRule.name}
+                onChange={(e) => setEditingRule({ ...editingRule, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label required">Rule Code</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editingRule.code}
+                onChange={(e) => setEditingRule({ ...editingRule, code: e.target.value.toUpperCase() })}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label required">Category</label>
+              <select
+                className="form-control"
+                value={editingRule.category}
+                onChange={(e) => setEditingRule({ ...editingRule, category: e.target.value })}
+                required
+              >
+                <option value="Basic">Basic</option>
+                <option value="Allowances">Allowances</option>
+                <option value="Gross">Gross</option>
+                <option value="Deductions">Deductions</option>
+                <option value="Net">Net</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label required">Sequence Order</label>
+              <input
+                type="number"
+                min="1"
+                className="form-control"
+                value={editingRule.sequence}
+                onChange={(e) => setEditingRule({ ...editingRule, sequence: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label className="form-label required">Computation Method</label>
+              <select
+                className="form-control"
+                value={editingRule.computationMethod}
+                onChange={(e) => setEditingRule({ ...editingRule, computationMethod: e.target.value })}
+                required
+              >
+                <option value="Percentage">Percentage (% of Base Wage / Previous Component)</option>
+                <option value="Fixed">Fixed (Specific rupee amount)</option>
+                <option value="Formula">Formula (Expression e.g. BASIC + HRA)</option>
+              </select>
+            </div>
+
+            {editingRule.computationMethod === 'Fixed' && (
+              <div className="form-group full-width">
+                <label className="form-label required">Fixed Amount (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-control"
+                  value={editingRule.amount}
+                  onChange={(e) => setEditingRule({ ...editingRule, amount: e.target.value })}
+                  required
+                />
+              </div>
+            )}
+
+            {editingRule.computationMethod === 'Percentage' && (
+              <div className="form-group full-width">
+                <label className="form-label required">Percentage (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-control"
+                  value={editingRule.percentage}
+                  onChange={(e) => setEditingRule({ ...editingRule, percentage: e.target.value })}
+                  required
+                />
+              </div>
+            )}
+
+            {editingRule.computationMethod === 'Formula' && (
+              <div className="form-group full-width">
+                <label className="form-label required">Formula Expression</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingRule.formulaExpression}
+                  onChange={(e) => setEditingRule({ ...editingRule, formulaExpression: e.target.value })}
+                  required
+                />
+              </div>
+            )}
+
+            <div className="form-group full-width">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+                <input
+                  type="checkbox"
+                  checked={editingRule.isActive}
+                  onChange={(e) => setEditingRule({ ...editingRule, isActive: e.target.checked })}
+                />
+                <span>Rule is Active (Used in Payrun calculations)</span>
+              </label>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Confirmation Dialog: Delete Salary Rule */}
+      <ConfirmDialog
+        isOpen={!!deleteRuleId}
+        onClose={() => setDeleteRuleId(null)}
+        onConfirm={handleDelete}
+        title="Delete Salary Rule"
+        message="Are you sure you want to delete this salary rule? This action cannot be undone and will impact future payrun computations."
+        confirmText="Delete Rule"
+        confirmVariant="danger"
+        loading={deleteLoading}
+      />
     </div>
   );
 }
