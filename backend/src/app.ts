@@ -6,6 +6,7 @@ import authRoutes from './modules/auth/auth.routes';
 import userRoutes from './modules/users/user.routes';
 import departmentRoutes from './modules/departments/department.routes';
 import employeeRoutes from './modules/employees/employee.routes';
+import contractRoutes from './modules/contracts/contract.routes';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/employees', employeeRoutes);
+app.use('/api/contracts', contractRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
