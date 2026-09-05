@@ -28,6 +28,7 @@ export function EmployeeDetail({
   onBack,
   onEdit,
   onDelete,
+  onViewContracts,
   canEdit = false,
   canDelete = false,
   isSelf = false,
@@ -150,56 +151,65 @@ export function EmployeeDetail({
         </div>
       </div>
 
-      {/* Smart Buttons / Related Record Hub (Phase 3 Operational Hub Readiness) */}
+      {/* Smart Buttons / Related Record Hub */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <Layers size={16} className="text-blue-400" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Operational Hub Navigation (Prepared for Connected Modules)
+              Operational Hub Navigation
             </h3>
           </div>
-          <span className="text-[11px] text-slate-500">Scheduled for subsequent phases</span>
+          <span className="text-[11px] text-slate-500">Connected HR & Payroll Modules</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {/* Contracts */}
-          <div className="bg-slate-950/60 border border-slate-800 hover:border-slate-700 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default">
+          {/* Contracts - Phase 5 Active Integration */}
+          <div
+            onClick={() => onViewContracts && onViewContracts(employee)}
+            className={`p-3 rounded-lg flex flex-col gap-1 transition-all ${
+              onViewContracts
+                ? 'bg-blue-950/30 border border-blue-500/40 hover:border-blue-400 hover:bg-blue-950/50 cursor-pointer shadow-sm'
+                : 'bg-slate-950/60 border border-slate-800 cursor-default'
+            }`}
+            role={onViewContracts ? 'button' : undefined}
+            tabIndex={onViewContracts ? 0 : undefined}
+          >
             <div className="flex items-center justify-between">
               <FileText size={16} className="text-blue-400" />
-              <span className="text-[10px] text-slate-500 font-mono">Module Hub</span>
+              <span className="text-[10px] text-blue-400 font-mono font-medium">Phase 5 Active</span>
             </div>
             <span className="text-xs font-semibold text-slate-200">Contracts</span>
-            <span className="text-[11px] text-slate-500">Wage & Employment Terms</span>
+            <span className="text-[11px] text-slate-400">View Wage Agreements →</span>
           </div>
 
-          {/* Attendance */}
-          <div className="bg-slate-950/60 border border-slate-800 hover:border-slate-700 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default">
+          {/* Attendance - Scheduled for future */}
+          <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default opacity-80">
             <div className="flex items-center justify-between">
-              <Clock size={16} className="text-emerald-400" />
-              <span className="text-[10px] text-slate-500 font-mono">Module Hub</span>
+              <Clock size={16} className="text-slate-500" />
+              <span className="text-[10px] text-slate-500 font-mono">Future</span>
             </div>
-            <span className="text-xs font-semibold text-slate-200">Attendance</span>
+            <span className="text-xs font-semibold text-slate-300">Attendance</span>
             <span className="text-[11px] text-slate-500">Check-in / Check-out</span>
           </div>
 
-          {/* Time Off */}
-          <div className="bg-slate-950/60 border border-slate-800 hover:border-slate-700 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default">
+          {/* Time Off - Scheduled for future */}
+          <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default opacity-80">
             <div className="flex items-center justify-between">
-              <Calendar size={16} className="text-amber-400" />
-              <span className="text-[10px] text-slate-500 font-mono">Module Hub</span>
+              <Calendar size={16} className="text-slate-500" />
+              <span className="text-[10px] text-slate-500 font-mono">Future</span>
             </div>
-            <span className="text-xs font-semibold text-slate-200">Time Off</span>
+            <span className="text-xs font-semibold text-slate-300">Time Off</span>
             <span className="text-[11px] text-slate-500">Requests & Balances</span>
           </div>
 
-          {/* Allocations */}
-          <div className="bg-slate-950/60 border border-slate-800 hover:border-slate-700 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default">
+          {/* Allocations - Scheduled for future */}
+          <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-lg flex flex-col gap-1 transition-colors cursor-default opacity-80">
             <div className="flex items-center justify-between">
-              <CheckCircle2 size={16} className="text-indigo-400" />
-              <span className="text-[10px] text-slate-500 font-mono">Module Hub</span>
+              <CheckCircle2 size={16} className="text-slate-500" />
+              <span className="text-[10px] text-slate-500 font-mono">Future</span>
             </div>
-            <span className="text-xs font-semibold text-slate-200">Allocations</span>
+            <span className="text-xs font-semibold text-slate-300">Allocations</span>
             <span className="text-[11px] text-slate-500">Leave Entitlements</span>
           </div>
         </div>

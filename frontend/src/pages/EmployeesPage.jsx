@@ -36,7 +36,7 @@ import { EmployeeForm } from '../modules/employees/EmployeeForm';
  * PeoplePay360 Employee Management Page
  * Handles role-aware directory views (List, Kanban), Detail hub, and Create/Edit forms.
  */
-export function EmployeesPage() {
+export function EmployeesPage({ onNavigateToContracts = null }) {
   const { user, token, role } = useAuth();
 
   const isEmployeeRole = role === ROLES.EMPLOYEE;
@@ -353,6 +353,7 @@ export function EmployeesPage() {
           onBack={handleBackToDirectory}
           onEdit={handleOpenEdit}
           onDelete={handleDeleteEmployee}
+          onViewContracts={onNavigateToContracts ? (emp) => onNavigateToContracts(emp._id || emp.id) : null}
           canEdit={canManage}
           canDelete={canManage}
           isDeleting={isDeleting}

@@ -8,6 +8,7 @@ import { RoleLanding } from './pages/RoleLanding';
 import { EmployeesPage } from './pages/EmployeesPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { WorkingSchedulesPage } from './pages/WorkingSchedulesPage';
+import { ContractsPage } from './pages/ContractsPage';
 
 /**
  * Authenticated Core Application Router
@@ -16,6 +17,7 @@ import { WorkingSchedulesPage } from './pages/WorkingSchedulesPage';
 function MainRouter() {
   const { user, role, isAuthenticated, isLoading, logout } = useAuth();
   const [selectedNavItem, setSelectedNavItem] = useState('');
+  const [contractEmployeeFilter, setContractEmployeeFilter] = useState(null);
 
   // Determine role-permitted navigation sections
   const sidebarSections = getNavigationForRole(role);
@@ -47,13 +49,28 @@ function MainRouter() {
   // 3. Render appropriate active module
   const renderActiveModule = () => {
     if (activeNavItem === 'employees' || activeNavItem === 'employee-profile') {
-      return <EmployeesPage />;
+      return (
+        <EmployeesPage
+          onNavigateToContracts={(empId) => {
+            setContractEmployeeFilter(empId);
+            setSelectedNavItem('contracts');
+          }}
+        />
+      );
     }
     if (activeNavItem === 'departments') {
       return <DepartmentsPage />;
     }
     if (activeNavItem === 'schedules') {
       return <WorkingSchedulesPage />;
+    }
+    if (activeNavItem === 'contracts') {
+      return (
+        <ContractsPage
+          key={contractEmployeeFilter || 'all'}
+          initialEmployeeFilter={contractEmployeeFilter}
+        />
+      );
     }
     return <RoleLanding activeNavItem={activeNavItem} />;
   };
@@ -66,7 +83,12 @@ function MainRouter() {
       user={user}
       sidebarSections={sidebarSections}
       activeNavItem={activeNavItem}
-      onNavigate={(itemId) => setSelectedNavItem(itemId)}
+      onNavigate={(itemId) => {
+        if (itemId !== 'contracts') {
+          setContractEmployeeFilter(null);
+        }
+        setSelectedNavItem(itemId);
+      }}
       onLogout={logout}
     >
       {renderActiveModule()}
