@@ -158,6 +158,18 @@ export class PayslipService {
       throw error;
     }
 
+    // Verify contract's Salary Structure matches Payrun Salary Structure
+    if (
+      !contract.salaryStructureId ||
+      contract.salaryStructureId.toString() !== salaryStructureId.toString()
+    ) {
+      const error: any = new Error(
+        `Employee ${employee.firstName} ${employee.lastName} is not eligible for the selected salary structure and payroll period.`
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
     // 3. Load active Salary Rules ordered by sequence
     const rules = await SalaryRule.find({
       salaryStructureId: structure._id,

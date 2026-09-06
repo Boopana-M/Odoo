@@ -48,6 +48,28 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
     }
   }, [isOpen]);
 
+  // Clear previously fetched employee list if Step 1 inputs change
+  const handleStructureChange = (newVal) => {
+    setSalaryStructureId(newVal);
+    setEligibleEmployees([]);
+    setIneligibleEmployees([]);
+    setSelectedEmpIds([]);
+  };
+
+  const handlePeriodStartChange = (newVal) => {
+    setPeriodStart(newVal);
+    setEligibleEmployees([]);
+    setIneligibleEmployees([]);
+    setSelectedEmpIds([]);
+  };
+
+  const handlePeriodEndChange = (newVal) => {
+    setPeriodEnd(newVal);
+    setEligibleEmployees([]);
+    setIneligibleEmployees([]);
+    setSelectedEmpIds([]);
+  };
+
   // Step 1 -> Step 2: Fetch eligible employees without creating Payrun in DB
   const handleProceedToStep2 = async (e) => {
     e?.preventDefault();
@@ -72,7 +94,7 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
       setSelectedEmpIds(list.map((emp) => emp._id));
       setStep(2);
     } catch (err) {
-      error(err.message || 'Failed to load eligible employees for the selected structure and period');
+      error(err.message || 'Unable to load eligible employees.');
     } finally {
       setFetchingEligible(false);
     }
@@ -193,7 +215,7 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
             <select
               className="form-control"
               value={salaryStructureId}
-              onChange={(e) => setSalaryStructureId(e.target.value)}
+              onChange={(e) => handleStructureChange(e.target.value)}
               required
             >
               {structures.map((s) => (
@@ -213,7 +235,7 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
               type="date"
               className="form-control"
               value={periodStart}
-              onChange={(e) => setPeriodStart(e.target.value)}
+              onChange={(e) => handlePeriodStartChange(e.target.value)}
               required
             />
           </div>
@@ -224,7 +246,7 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
               type="date"
               className="form-control"
               value={periodEnd}
-              onChange={(e) => setPeriodEnd(e.target.value)}
+              onChange={(e) => handlePeriodEndChange(e.target.value)}
               required
             />
           </div>
@@ -305,7 +327,7 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
             <div className="alert-banner alert-warning" style={{ marginTop: '1rem' }}>
               <AlertCircle size={18} />
               <div>
-                <strong>No eligible employees found:</strong> Ensure employees have an active contract assigned to this Salary Structure and covering the date range {periodStart} to {periodEnd}.
+                <strong>No employees are eligible for the selected salary structure and payroll period.</strong>
               </div>
             </div>
           )}

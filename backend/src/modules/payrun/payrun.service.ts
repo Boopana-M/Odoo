@@ -77,12 +77,17 @@ export class PayrunService {
       } else {
         contract = matchingContracts[0];
         // Check if contract has salaryStructureId specified and if it matches
-        if (
-          contract.salaryStructureId &&
+        if (!contract.salaryStructureId) {
+          isEligible = false;
+          contractError = 'NO_SALARY_STRUCTURE';
+          empWarnings.push('Employee contract has no salary structure assigned');
+        } else if (
           contract.salaryStructureId.toString() !== validated.salaryStructureId.toString()
         ) {
+          isEligible = false;
+          contractError = 'STRUCTURE_MISMATCH';
           empWarnings.push(
-            `Contract salary structure (${contract.salaryStructureId}) differs from payrun structure (${validated.salaryStructureId})`
+            `Contract salary structure differs from payrun structure`
           );
         }
       }
@@ -222,6 +227,15 @@ export class PayrunService {
       }).sort({ startDate: 1 });
 
       if (matchingContracts.length === 0) {
+        const otherContracts = await Contract.find({ employeeId: emp._id });
+        if (otherContracts.length > 0) {
+          const error: any = new Error(
+            `Employee ${emp.firstName} ${emp.lastName} is not eligible for the selected salary structure and payroll period.`
+          );
+          error.statusCode = 400;
+          throw error;
+        }
+
         warnings.push({
           type: 'MISSING_CONTRACT',
           message: `Employee ${emp.firstName} ${emp.lastName} (${emp.employeeCode}) has no active contract for the period`,
@@ -251,14 +265,14 @@ export class PayrunService {
       } else {
         const contract = matchingContracts[0];
         if (
-          contract.salaryStructureId &&
+          !contract.salaryStructureId ||
           contract.salaryStructureId.toString() !== validated.salaryStructureId.toString()
         ) {
-          warnings.push({
-            type: 'STRUCTURE_MISMATCH',
-            message: `Employee ${emp.firstName} ${emp.lastName}'s contract structure differs from payrun structure`,
-            employeeId: emp._id as mongoose.Types.ObjectId
-          });
+          const error: any = new Error(
+            `Employee ${emp.firstName} ${emp.lastName} is not eligible for the selected salary structure and payroll period.`
+          );
+          error.statusCode = 400;
+          throw error;
         }
       }
 
@@ -419,7 +433,18 @@ export class PayrunService {
           $or: [{ endDate: null }, { endDate: { $gte: payrun.periodStart } }]
         }).sort({ startDate: 1 });
 
-        if (matchingContracts.length > 1) {
+        if (matchingContracts.length === 0) {
+          const otherContracts = await Contract.find({ employeeId: empId });
+          if (otherContracts.length > 0) {
+            const emp = await Employee.findById(empId);
+            const employeeName = emp ? `${emp.firstName} ${emp.lastName}`.trim() : empId.toString();
+            const error: any = new Error(
+              `Employee ${employeeName} is not eligible for the selected salary structure and payroll period.`
+            );
+            error.statusCode = 400;
+            throw error;
+          }
+        } else if (matchingContracts.length > 1) {
           const emp = await Employee.findById(empId);
           const employeeName = emp ? `${emp.firstName} ${emp.lastName}`.trim() : empId.toString();
           const hasOverlap = hasAnyOverlappingContracts(matchingContracts);
@@ -440,6 +465,20 @@ export class PayrunService {
             status: c.status
           }));
           throw error;
+        } else {
+          const contract = matchingContracts[0];
+          if (
+            !contract.salaryStructureId ||
+            contract.salaryStructureId.toString() !== payrun.salaryStructureId.toString()
+          ) {
+            const emp = await Employee.findById(empId);
+            const employeeName = emp ? `${emp.firstName} ${emp.lastName}`.trim() : empId.toString();
+            const error: any = new Error(
+              `Employee ${employeeName} is not eligible for the selected salary structure and payroll period.`
+            );
+            error.statusCode = 400;
+            throw error;
+          }
         }
 
         objectIds.push(new mongoose.Types.ObjectId(empId));

@@ -31,8 +31,14 @@ import { useNotification } from '../../context/NotificationContext';
 export function EmployeeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isHRManager, isEmployeeOnly } = useAuth();
+  const { user, role, isHRManager, isEmployeeOnly } = useAuth();
   const { success, error } = useNotification();
+
+  useEffect(() => {
+    if (id === 'me' && role && role !== 'Employee') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [id, role, navigate]);
 
   const [employee, setEmployee] = useState(null);
   const [departments, setDepartments] = useState([]);
@@ -197,6 +203,20 @@ export function EmployeeDetail() {
   }
 
   if (!employee) {
+    if (id === 'me') {
+      return (
+        <div className="card" style={{ padding: '3rem', textAlign: 'center', maxWidth: 600, margin: '3rem auto' }}>
+          <User size={48} color="var(--primary)" style={{ marginBottom: '1rem' }} />
+          <h3 style={{ marginBottom: '0.5rem' }}>No Employee Profile Linked</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+            There is currently no employee record linked to your user account.
+          </p>
+          <button className="btn btn-primary" onClick={() => navigate(role === 'Employee' ? '/attendance' : '/dashboard')}>
+            {role === 'Employee' ? 'Go to Attendance' : 'Go to Dashboard'}
+          </button>
+        </div>
+      );
+    }
     return <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>Employee not found.</div>;
   }
 

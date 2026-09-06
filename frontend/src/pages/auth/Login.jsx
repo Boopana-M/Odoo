@@ -38,9 +38,10 @@ export function Login() {
       const user = await login(email, password);
       success(`Welcome back, ${user.name}!`);
       if (user.role === 'Employee') {
-        navigate('/employees');
+        navigate('/employees/me', { replace: true });
       } else {
-        navigate(from);
+        const target = (from && from !== '/login' && from !== '/employees/me' && from !== '/') ? from : '/dashboard';
+        navigate(target, { replace: true });
       }
     } catch (err) {
       error(err.message || 'Invalid credentials');

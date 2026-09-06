@@ -229,7 +229,8 @@ export function App() {
             }
           />
 
-          {/* Default catch-all */}
+          {/* Root and Default catch-all */}
+          <Route path="/" element={<RootRedirect />} />
           <Route path="*" element={<RootRedirect />} />
         </Routes>
       </main>
