@@ -11,6 +11,7 @@ export interface EmailDeliveryDetail {
   email?: string;
   status: 'Sent' | 'Failed' | 'Skipped';
   reason?: string;
+  previewUrl?: string;
 }
 
 export interface BulkEmailResult {
@@ -18,41 +19,95 @@ export interface BulkEmailResult {
   payrunName: string;
   total: number;
   sent: number;
+  sentCount: number;
   failed: number;
+  failedCount: number;
   skipped: number;
+  skippedCount: number;
   details: EmailDeliveryDetail[];
 }
 
 export class EmailService {
   private transporter: Transporter | null = null;
+  private initializingPromise: Promise<Transporter> | null = null;
 
   /**
    * Initializes or returns a singleton Nodemailer SMTP transporter.
+   * If no SMTP configuration is provided, automatically uses an Ethereal test account or JSON transporter.
    */
-  getTransporter(): Transporter {
-    if (!this.transporter) {
-      const host = process.env.SMTP_HOST || 'localhost';
+  async getTransporter(): Promise<Transporter> {
+    if (this.transporter) {
+      return this.transporter;
+    }
+
+    if (this.initializingPromise) {
+      return this.initializingPromise;
+    }
+
+    this.initializingPromise = (async () => {
+      const host = process.env.SMTP_HOST;
       const port = Number(process.env.SMTP_PORT) || 587;
       const secure = process.env.SMTP_SECURE === 'true' || port === 465;
       const user = process.env.SMTP_USER;
       const pass = process.env.SMTP_PASSWORD || process.env.SMTP_PASS;
 
-      const transportOptions: any = {
-        host,
-        port,
-        secure,
-        tls: {
-          rejectUnauthorized: false
-        }
-      };
+      // If a real SMTP host (other than default localhost without auth) is provided
+      if (host && host !== 'localhost') {
+        const transportOptions: any = {
+          host,
+          port,
+          secure,
+          tls: {
+            rejectUnauthorized: false
+          }
+        };
 
-      if (user && pass) {
-        transportOptions.auth = { user, pass };
+        if (user && pass) {
+          transportOptions.auth = { user, pass };
+        }
+
+        this.transporter = nodemailer.createTransport(transportOptions);
+        return this.transporter;
       }
 
-      this.transporter = nodemailer.createTransport(transportOptions);
-    }
-    return this.transporter;
+      // If user & pass are explicitly provided for localhost
+      if (user && pass && host) {
+        this.transporter = nodemailer.createTransport({
+          host,
+          port,
+          secure,
+          auth: { user, pass },
+          tls: { rejectUnauthorized: false }
+        });
+        return this.transporter;
+      }
+
+      // Development fallback: automatically provision an Ethereal test mailer
+      try {
+        const testAccount = await nodemailer.createTestAccount();
+        this.transporter = nodemailer.createTransport({
+          host: 'smtp.ethereal.email',
+          port: 587,
+          secure: false,
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass
+          }
+        });
+        console.log(`[EmailService] Initialized Ethereal test mailer for ${testAccount.user}`);
+      } catch (err: any) {
+        console.warn(`[EmailService] Ethereal account creation skipped, using JSON dev transport:`, err.message);
+        this.transporter = nodemailer.createTransport({
+          jsonTransport: true
+        });
+      }
+
+      return this.transporter;
+    })();
+
+    const resolved = await this.initializingPromise;
+    this.initializingPromise = null;
+    return resolved;
   }
 
   /**
@@ -74,7 +129,7 @@ export class EmailService {
     payrunName: string;
     pdfBuffer: Buffer;
     payslipId: string;
-  }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  }): Promise<{ success: boolean; messageId?: string; previewUrl?: string; error?: string }> {
     const fromAddress =
       process.env.SMTP_FROM || 'PeoplePay360 <noreply@peoplepay360.com>';
 
@@ -129,9 +184,13 @@ PeoplePay360 Payroll Team`;
     };
 
     try {
-      const transporter = this.getTransporter();
+      const transporter = await this.getTransporter();
       const info = await transporter.sendMail(mailOptions);
-      return { success: true, messageId: info.messageId };
+      const previewUrl = nodemailer.getTestMessageUrl(info) || undefined;
+      if (previewUrl) {
+        console.log(`[EmailService] Payslip sent to ${options.to}. Preview URL: ${previewUrl}`);
+      }
+      return { success: true, messageId: info.messageId, previewUrl };
     } catch (err: any) {
       // Return error message cleanly without leaking sensitive auth info
       const cleanMessage = err.message || 'SMTP delivery failed';
@@ -231,7 +290,7 @@ PeoplePay360 Payroll Team`;
         continue;
       }
 
-      // Send via SMTP
+      // Send via SMTP / Ethereal
       const sendResult = await this.sendSinglePayslipEmail({
         to: employeeEmail,
         employeeName,
@@ -252,7 +311,8 @@ PeoplePay360 Payroll Team`;
           employeeId: employeeIdStr,
           employeeName,
           email: employeeEmail,
-          status: 'Sent'
+          status: 'Sent',
+          previewUrl: sendResult.previewUrl
         });
       } else {
         payslip.emailStatus = 'Failed';
@@ -274,8 +334,11 @@ PeoplePay360 Payroll Team`;
       payrunName: payrun.name,
       total: payslips.length,
       sent,
+      sentCount: sent,
       failed,
+      failedCount: failed,
       skipped,
+      skippedCount: skipped,
       details
     };
   }

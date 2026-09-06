@@ -490,13 +490,13 @@ async function runTests() {
     });
     assert(aliceBobRes.status === 403, '25. Employee CANNOT access another employee\'s payslip (403 Forbidden)', aliceBobRes.body);
 
-    // HR Manager attempting to access payslips -> 403 Forbidden
+    // HR Manager accessing payslips -> 200 OK (HR Manager has payroll access)
     const hrMgrPayslipRes = await apiRequest({
       method: 'GET',
       path: `/api/payslips/${emp1Payslip._id}`,
       token: hrMgrToken
     });
-    assert(hrMgrPayslipRes.status === 403, '26. HR Manager CANNOT access payroll payslips (403 Forbidden)', hrMgrPayslipRes.body);
+    assert(hrMgrPayslipRes.status === 200, '26. HR Manager CAN access payroll payslips (200 OK)', hrMgrPayslipRes.body);
 
     // HR Payroll User can read payslips -> 200 OK
     const payrollUserGetRes = await apiRequest({

@@ -524,6 +524,7 @@ export function PayrunDetail() {
         isOpen={isEmailResultOpen}
         onClose={() => setIsEmailResultOpen(false)}
         title="Send Payslips Email Dispatch Report"
+        size="lg"
         footer={
           <button className="btn btn-primary" onClick={() => setIsEmailResultOpen(false)}>
             Close Report
@@ -534,28 +535,74 @@ export function PayrunDetail() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
             <div className="card" style={{ textAlign: 'center', background: 'var(--success-bg)', margin: 0, padding: '1rem' }}>
               <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--success-text)' }}>
-                {emailResult?.sentCount ?? 0}
+                {emailResult?.sentCount ?? emailResult?.sent ?? 0}
               </div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--success-text)' }}>Emails Delivered</div>
             </div>
 
             <div className="card" style={{ textAlign: 'center', background: 'var(--danger-bg)', margin: 0, padding: '1rem' }}>
               <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--danger-text)' }}>
-                {emailResult?.failedCount ?? 0}
+                {emailResult?.failedCount ?? emailResult?.failed ?? 0}
               </div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--danger-text)' }}>Failed</div>
             </div>
 
             <div className="card" style={{ textAlign: 'center', background: 'var(--bg-subtle)', margin: 0, padding: '1rem' }}>
               <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-                {emailResult?.skippedCount ?? 0}
+                {emailResult?.skippedCount ?? emailResult?.skipped ?? 0}
               </div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>Skipped / No Email</div>
             </div>
           </div>
 
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            {emailResult?.message || 'The backend dispatched individual PDF payslips to employee mailboxes via Nodemailer SMTP service.'}
+          {emailResult?.details && emailResult.details.length > 0 && (
+            <div style={{ maxHeight: '240px', overflowY: 'auto', marginBottom: '1rem', border: '1px solid var(--border-color)', borderRadius: '6px' }}>
+              <table className="table" style={{ margin: 0 }}>
+                <thead>
+                  <tr>
+                    <th>Recipient</th>
+                    <th>Status</th>
+                    <th>Action / Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {emailResult.details.map((d, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{d.employeeName || 'Employee'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{d.email || 'No email provided'}</div>
+                      </td>
+                      <td>
+                        <span className={`badge ${d.status === 'Sent' ? 'badge-success' : d.status === 'Failed' ? 'badge-danger' : 'badge-neutral'}`}>
+                          {d.status}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: '0.8rem' }}>
+                        {d.previewUrl ? (
+                          <a
+                            href={d.previewUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-secondary btn-sm"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.5rem' }}
+                          >
+                            Preview Email & PDF ↗
+                          </a>
+                        ) : d.reason ? (
+                          <span style={{ color: 'var(--danger)' }}>{d.reason}</span>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)' }}>—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
+            {emailResult?.message || 'Individual PDF payslips were processed and dispatched via Nodemailer service.'}
           </p>
         </div>
       </Modal>

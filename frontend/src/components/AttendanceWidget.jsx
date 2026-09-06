@@ -67,19 +67,9 @@ export function AttendanceWidget() {
   }, [activeAttendance]);
 
   const handleCheckIn = async () => {
-    if (!user?.employeeId) {
-      error('No employee profile linked to your user account');
-      return;
-    }
     setLoading(true);
     try {
-      const now = new Date();
-      const res = await attendanceApi.create({
-        employeeId: user.employeeId,
-        date: now.toISOString().split('T')[0],
-        checkIn: now.toISOString(),
-        status: 'Present'
-      });
+      const res = await attendanceApi.checkIn();
       setActiveAttendance(res.data);
       success('Checked in successfully!');
       setIsOpen(false);
@@ -91,13 +81,9 @@ export function AttendanceWidget() {
   };
 
   const handleCheckOut = async () => {
-    if (!activeAttendance) return;
     setLoading(true);
     try {
-      const now = new Date();
-      const res = await attendanceApi.update(activeAttendance._id, {
-        checkOut: now.toISOString()
-      });
+      const res = await attendanceApi.checkOut();
       setActiveAttendance(res.data);
       success('Checked out successfully!');
       setIsOpen(false);
@@ -108,7 +94,7 @@ export function AttendanceWidget() {
     }
   };
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || user?.role !== 'Employee') return null;
 
   const isCheckedIn = !!(activeAttendance && !activeAttendance.checkOut);
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layers, Calendar, Users, ArrowRight, ArrowLeft, Check, AlertCircle } from 'lucide-react';
+import { Layers, Calendar, Users, ArrowRight, ArrowLeft, Check, AlertCircle, AlertTriangle } from 'lucide-react';
 import { payrunApi } from '../../api/payrunApi';
 import { salaryApi } from '../../api/salaryApi';
 import Modal from '../../components/Modal';
@@ -22,6 +22,7 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
 
   // Step 2 Eligible Employees
   const [eligibleEmployees, setEligibleEmployees] = useState([]);
+  const [ineligibleEmployees, setIneligibleEmployees] = useState([]);
   const [selectedEmpIds, setSelectedEmpIds] = useState([]);
   const [fetchingEligible, setFetchingEligible] = useState(false);
 
@@ -64,7 +65,9 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
         : Array.isArray(rawData.eligibleEmployees)
         ? rawData.eligibleEmployees
         : [];
+      const ineligibles = Array.isArray(rawData.ineligibleEmployees) ? rawData.ineligibleEmployees : [];
       setEligibleEmployees(list);
+      setIneligibleEmployees(ineligibles);
       // Select all eligible by default
       setSelectedEmpIds(list.map((emp) => emp._id));
       setStep(2);
@@ -303,6 +306,40 @@ export function PayrunWizardModal({ isOpen, onClose, onSuccess }) {
               <AlertCircle size={18} />
               <div>
                 <strong>No eligible employees found:</strong> Ensure employees have an active contract assigned to this Salary Structure and covering the date range {periodStart} to {periodEnd}.
+              </div>
+            </div>
+          )}
+
+          {ineligibleEmployees.length > 0 && (
+            <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border-color, #e2e8f0)', paddingTop: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+                <AlertTriangle size={16} style={{ color: '#d97706' }} />
+                <h5 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary, #4b5563)', margin: 0 }}>
+                  Ineligible Employees ({ineligibleEmployees.length})
+                </h5>
+              </div>
+              <div style={{ maxHeight: 180, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {ineligibleEmployees.map((emp) => (
+                  <div
+                    key={emp._id}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      background: 'rgba(239, 68, 68, 0.04)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      borderRadius: 6,
+                      fontSize: '0.8rem'
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, color: '#b91c1c' }}>
+                      {emp.firstName} {emp.lastName} {emp.employeeCode ? `(${emp.employeeCode})` : ''}
+                    </div>
+                    {emp.warnings?.map((w, idx) => (
+                      <div key={idx} style={{ color: '#6b7280', marginTop: 2 }}>
+                        • {w}
+                      </div>
+                    ))}
+                  </div>
+                ))}
               </div>
             </div>
           )}

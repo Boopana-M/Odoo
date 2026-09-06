@@ -6,8 +6,12 @@ import { Payrun, IPayrun } from '../payrun/payrun.model';
 import { SalaryStructure } from '../salary/structure/structure.model';
 import { SalaryRule, ISalaryRule } from '../salary/rule/rule.model';
 import { Contract, IContract } from '../contracts/contract.model';
+import { hasAnyOverlappingContracts } from '../contracts/contract.boundary';
 import { Employee } from '../employees/employee.model';
 import { Attendance } from '../attendance/attendance.model';
+import { TimeOffRequest } from '../timeoff/request/request.model';
+import { TimeOffAllocation } from '../timeoff/allocation/timeoff-allocation.model';
+import { TimeOffType } from '../timeoff/type/timeoff-type.model';
 import {
   CalculatePayslipDTO,
   UpdatePayslipDTO,
@@ -21,21 +25,55 @@ import { generatePayslipPdfBuffer } from '../../utils/pdfGenerator';
 export class PayslipService {
   /**
    * Selects the contract applicable to the payroll period.
-   * Ensures the contract was active during the period, not just the latest created contract.
+   * Validates that exactly one contract covers the period.
+   * Throws 400 structured error if multiple sequential or overlapping contracts are detected.
    */
   async findApplicableContract(
     employeeId: string | mongoose.Types.ObjectId,
     periodStart: Date,
-    periodEnd: Date
+    periodEnd: Date,
+    employeeName?: string
   ): Promise<IContract | null> {
-    const contract = await Contract.findOne({
+    const contracts = await Contract.find({
       employeeId: new mongoose.Types.ObjectId(employeeId),
       status: 'Active',
       startDate: { $lte: periodEnd },
       $or: [{ endDate: null }, { endDate: { $gte: periodStart } }]
-    }).sort({ startDate: -1 });
+    }).sort({ startDate: 1 });
 
-    return contract;
+    if (contracts.length === 0) {
+      return null;
+    }
+
+    if (contracts.length > 1) {
+      if (!employeeName) {
+        const emp = await Employee.findById(employeeId);
+        employeeName = emp ? `${emp.firstName} ${emp.lastName}`.trim() : employeeId.toString();
+      }
+
+      const hasOverlap = hasAnyOverlappingContracts(contracts);
+      const code = hasOverlap ? 'OVERLAPPING_EMPLOYEE_CONTRACTS' : 'MULTIPLE_CONTRACTS_IN_PAYROLL_PERIOD';
+      const message = hasOverlap
+        ? `Employee ${employeeName} has overlapping contracts. Resolve the contract dates before processing payroll.`
+        : `Employee ${employeeName} has multiple contracts within the selected payroll period. Create separate Payruns for each contract period.`;
+
+      const error: any = new Error(message);
+      error.statusCode = 400;
+      error.code = code;
+      error.employeeId = employeeId;
+      error.contracts = contracts.map((c) => ({
+        _id: c._id,
+        startDate: c.startDate,
+        endDate: c.endDate,
+        wage: c.wage,
+        status: c.status,
+        jobPosition: c.jobPosition,
+        salaryStructureId: c.salaryStructureId
+      }));
+      throw error;
+    }
+
+    return contracts[0];
   }
 
   /**
@@ -97,7 +135,12 @@ export class PayslipService {
     const periodEnd = new Date(payrunInput.periodEnd);
 
     // 1. Find applicable contract
-    const contract = await this.findApplicableContract(employeeId, periodStart, periodEnd);
+    const contract = await this.findApplicableContract(
+      employeeId,
+      periodStart,
+      periodEnd,
+      `${employee.firstName} ${employee.lastName}`.trim()
+    );
     if (!contract) {
       const error: any = new Error(
         `No active contract applicable for employee ${employee.firstName} ${employee.lastName} (${employee.employeeCode}) during period ${periodStart.toISOString().split('T')[0]} - ${periodEnd.toISOString().split('T')[0]}`
@@ -132,29 +175,67 @@ export class PayslipService {
     // 4. Calculate worked days & approved time off
     const workedDays = await this.getWorkedDays(employeeId, periodStart, periodEnd);
 
-    // Dynamic Leave Integration from TimeOffRequest
+    // Dynamic Leave Integration from TimeOffRequest (and fallback to TimeOffAllocation)
     let unpaidLeaveDays = 0;
     let paidLeaveDays = 0;
     try {
-      if (mongoose.models.TimeOffRequest) {
-        const leaves = await mongoose.models.TimeOffRequest.find({
-          employeeId,
-          status: 'Approved',
-          startDate: { $lte: periodEnd },
-          endDate: { $gte: periodStart }
-        }).populate('timeOffTypeId');
+      const leaves = await TimeOffRequest.find({
+        employeeId,
+        status: 'Approved',
+        startDate: { $lte: periodEnd },
+        endDate: { $gte: periodStart }
+      }).populate({ path: 'timeOffTypeId', model: TimeOffType });
 
+      if (leaves && leaves.length > 0) {
         for (const req of leaves) {
           const tType: any = req.timeOffTypeId;
-          if (tType && tType.payrollIntegration === 'Unpaid') {
+          const nameLower = (tType?.name || '').toLowerCase().trim();
+          const isExplicitPaid = nameLower.startsWith('paid ') || nameLower === 'paid vacation' || nameLower === 'paid leave';
+          const isUnpaid = !isExplicitPaid && (
+            tType?.payrollIntegration === true ||
+            tType?.payrollIntegration === 'Unpaid' ||
+            nameLower.includes('unpaid') ||
+            nameLower.includes('lop') ||
+            nameLower.includes('loss of pay')
+          );
+
+          if (isUnpaid) {
             unpaidLeaveDays += Number(req.duration) || 0;
           } else {
             paidLeaveDays += Number(req.duration) || 0;
           }
         }
+      } else {
+        // Fallback: Check approved allocations if takenAmount > 0 and active during period
+        const allocations = await TimeOffAllocation.find({
+          employeeId,
+          approvalStatus: 'Approved',
+          takenAmount: { $gt: 0 },
+          validFrom: { $lte: periodEnd },
+          validTo: { $gte: periodStart }
+        }).populate({ path: 'timeOffTypeId', model: TimeOffType });
+
+        for (const alloc of allocations) {
+          const tType: any = alloc.timeOffTypeId;
+          const nameLower = (tType?.name || '').toLowerCase().trim();
+          const isExplicitPaid = nameLower.startsWith('paid ') || nameLower === 'paid vacation' || nameLower === 'paid leave';
+          const isUnpaid = !isExplicitPaid && (
+            tType?.payrollIntegration === true ||
+            tType?.payrollIntegration === 'Unpaid' ||
+            nameLower.includes('unpaid') ||
+            nameLower.includes('lop') ||
+            nameLower.includes('loss of pay')
+          );
+
+          if (isUnpaid) {
+            unpaidLeaveDays += Number(alloc.takenAmount) || 0;
+          } else {
+            paidLeaveDays += Number(alloc.takenAmount) || 0;
+          }
+        }
       }
-    } catch {
-      // Fallback if time-off query encounters error
+    } catch (err) {
+      console.error('Error fetching employee leaves during payslip calculation:', err);
     }
 
     // 5. Build calculation context

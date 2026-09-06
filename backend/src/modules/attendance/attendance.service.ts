@@ -1,7 +1,13 @@
 import mongoose from 'mongoose';
 import { Attendance, IAttendance } from './attendance.model';
-import { CreateAttendanceInput, UpdateAttendanceInput, validateAttendanceData } from './attendance.validation';
+import {
+  CreateAttendanceInput,
+  UpdateAttendanceInput,
+  validateAttendanceData,
+  calculateWorkedHours
+} from './attendance.validation';
 import { AuthUserPayload } from '../../types/express';
+import { User } from '../users/user.model';
 
 export interface AttendanceFilterQuery {
   employeeId?: string;
@@ -11,6 +17,132 @@ export interface AttendanceFilterQuery {
 }
 
 export class AttendanceService {
+  /**
+   * Employee self-service check-in.
+   * Only allowed for users with role === 'Employee'.
+   * Derives employeeId strictly from authenticated user.
+   * Prevents duplicate check-in if an open attendance record already exists.
+   */
+  async checkIn(currentUser?: AuthUserPayload): Promise<IAttendance> {
+    if (!currentUser) {
+      const error: any = new Error('Unauthorized');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    if (currentUser.role !== 'Employee') {
+      const error: any = new Error('Only employees can perform self-service check-in.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    let employeeId = currentUser.employeeId;
+    if (!employeeId) {
+      const dbUser = await User.findById(currentUser.userId);
+      if (dbUser?.employeeId) {
+        employeeId = dbUser.employeeId.toString();
+      }
+    }
+
+    if (!employeeId) {
+      const error: any = new Error('No employee profile linked to this user account');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // Check for existing active/open attendance record for this employee
+    const activeAttendance = await Attendance.findOne({
+      employeeId: new mongoose.Types.ObjectId(employeeId),
+      checkOut: null
+    });
+
+    if (activeAttendance) {
+      const error: any = new Error('Already checked in. Please check out before checking in again.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const now = new Date();
+    const dateOnly = new Date(now);
+    dateOnly.setHours(0, 0, 0, 0);
+
+    const attendance = new Attendance({
+      employeeId: new mongoose.Types.ObjectId(employeeId),
+      date: dateOnly,
+      checkIn: now,
+      status: 'Present',
+      workedHours: 0
+    });
+
+    const saved = await attendance.save();
+
+    return (await Attendance.findById(saved._id)
+      .populate('employeeId', 'firstName lastName employeeCode departmentId jobPosition')
+      .populate('correctedBy', 'name email role')) as IAttendance;
+  }
+
+  /**
+   * Employee self-service check-out.
+   * Only allowed for users with role === 'Employee'.
+   * Derives employeeId strictly from authenticated user.
+   * Finds active open record, sets checkOut, and computes workedHours.
+   */
+  async checkOut(currentUser?: AuthUserPayload): Promise<IAttendance> {
+    if (!currentUser) {
+      const error: any = new Error('Unauthorized');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    if (currentUser.role !== 'Employee') {
+      const error: any = new Error('Only employees can perform self-service check-out.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    let employeeId = currentUser.employeeId;
+    if (!employeeId) {
+      const dbUser = await User.findById(currentUser.userId);
+      if (dbUser?.employeeId) {
+        employeeId = dbUser.employeeId.toString();
+      }
+    }
+
+    if (!employeeId) {
+      const error: any = new Error('No employee profile linked to this user account');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // Find the employee's active/open attendance record
+    const attendance = await Attendance.findOne({
+      employeeId: new mongoose.Types.ObjectId(employeeId),
+      checkOut: null
+    }).sort({ checkIn: -1 });
+
+    if (!attendance) {
+      const error: any = new Error('Cannot check out without an active check-in.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const now = new Date();
+    if (now.getTime() < attendance.checkIn.getTime()) {
+      const error: any = new Error('Check-out time cannot be before check-in time');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    attendance.checkOut = now;
+    attendance.workedHours = calculateWorkedHours(attendance.checkIn, now);
+
+    await attendance.save();
+
+    return (await Attendance.findById(attendance._id)
+      .populate('employeeId', 'firstName lastName employeeCode departmentId jobPosition')
+      .populate('correctedBy', 'name email role')) as IAttendance;
+  }
+
   async createAttendance(
     input: CreateAttendanceInput,
     currentUser?: AuthUserPayload
@@ -29,6 +161,19 @@ export class AttendanceService {
       }
       // Ensure the employeeId is set to the authenticated user's employeeId
       input.employeeId = currentUser.employeeId.toString();
+
+      // If open attendance (no checkOut provided), check for duplicate active attendance
+      if (!input.checkOut) {
+        const activeAttendance = await Attendance.findOne({
+          employeeId: new mongoose.Types.ObjectId(input.employeeId),
+          checkOut: null
+        });
+        if (activeAttendance) {
+          const error: any = new Error('Already checked in. Please check out before checking in again.');
+          error.statusCode = 400;
+          throw error;
+        }
+      }
     }
 
     const validatedData = await validateAttendanceData(input, false);
@@ -157,6 +302,12 @@ export class AttendanceService {
       const attendanceEmpId = attendance.employeeId.toString();
       if (!updaterUser.employeeId || updaterUser.employeeId.toString() !== attendanceEmpId) {
         const error: any = new Error('Access forbidden: You can only update your own attendance records');
+        error.statusCode = 403;
+        throw error;
+      }
+      // Employees cannot perform manual corrections or arbitrarily edit attendance records
+      if (input.correctionReason || input.status || input.checkIn || input.date || input.employeeId) {
+        const error: any = new Error('Access forbidden: Employees cannot manually correct attendance records');
         error.statusCode = 403;
         throw error;
       }

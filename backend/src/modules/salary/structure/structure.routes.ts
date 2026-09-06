@@ -14,13 +14,13 @@ router.post(
 
 router.get(
   '/',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User'),
   (req, res, next) => salaryStructureController.getAll(req, res, next)
 );
 
 router.get(
   '/:id',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User'),
   (req, res, next) => salaryStructureController.getById(req, res, next)
 );
 

@@ -13,24 +13,24 @@ router.post(
   (req, res, next) => salaryRuleController.create(req, res, next)
 );
 
-// Get All Salary Rules (Admin, HR Payroll Manager, HR Payroll User)
+// Get All Salary Rules (Admin, HR Manager, HR Payroll Manager, HR Payroll User)
 router.get(
   '/',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User'),
   (req, res, next) => salaryRuleController.getAll(req, res, next)
 );
 
-// Get Salary Rules for a specific structure (Admin, HR Payroll Manager, HR Payroll User)
+// Get Salary Rules for a specific structure (Admin, HR Manager, HR Payroll Manager, HR Payroll User)
 router.get(
   '/structure/:structureId',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User'),
   (req, res, next) => salaryRuleController.getByStructure(req, res, next)
 );
 
-// Get one Salary Rule (Admin, HR Payroll Manager, HR Payroll User)
+// Get one Salary Rule (Admin, HR Manager, HR Payroll Manager, HR Payroll User)
 router.get(
   '/:id',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User'),
   (req, res, next) => salaryRuleController.getById(req, res, next)
 );
 

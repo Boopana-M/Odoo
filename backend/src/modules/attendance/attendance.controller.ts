@@ -2,6 +2,48 @@ import { Request, Response, NextFunction } from 'express';
 import { attendanceService } from './attendance.service';
 
 export class AttendanceController {
+  async checkIn(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user || req.user.role !== 'Employee') {
+        res.status(403).json({
+          status: 'error',
+          message: 'Only employees can perform self-service check-in.'
+        });
+        return;
+      }
+
+      const attendance = await attendanceService.checkIn(req.user);
+      res.status(201).json({
+        status: 'success',
+        message: 'Checked in successfully',
+        data: attendance
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async checkOut(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user || req.user.role !== 'Employee') {
+        res.status(403).json({
+          status: 'error',
+          message: 'Only employees can perform self-service check-out.'
+        });
+        return;
+      }
+
+      const attendance = await attendanceService.checkOut(req.user);
+      res.status(200).json({
+        status: 'success',
+        message: 'Checked out successfully',
+        data: attendance
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const attendance = await attendanceService.createAttendance(req.body, req.user);

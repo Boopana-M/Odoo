@@ -9,6 +9,7 @@ import {
 import { SalaryStructure } from '../salary/structure/structure.model';
 import { Employee, IEmployee } from '../employees/employee.model';
 import { Contract } from '../contracts/contract.model';
+import { hasAnyOverlappingContracts } from '../contracts/contract.boundary';
 import { payslipService } from '../payslip/payslip.service';
 
 export class PayrunService {
@@ -49,20 +50,32 @@ export class PayrunService {
     for (const emp of activeEmployees) {
       const empWarnings: string[] = [];
 
-      // Check applicable contract
-      const contract = await Contract.findOne({
+      // Check applicable contracts
+      const matchingContracts = await Contract.find({
         employeeId: emp._id,
         status: 'Active',
         startDate: { $lte: validated.periodEnd },
         $or: [{ endDate: null }, { endDate: { $gte: validated.periodStart } }]
-      });
+      }).sort({ startDate: 1 });
 
       let isEligible = true;
+      let contract: any = null;
+      let contractError: string | null = null;
 
-      if (!contract) {
+      if (matchingContracts.length === 0) {
         isEligible = false;
+        contractError = 'NO_ACTIVE_CONTRACT';
         empWarnings.push('No active contract applicable for the selected payroll period');
+      } else if (matchingContracts.length > 1) {
+        isEligible = false;
+        const hasOverlap = hasAnyOverlappingContracts(matchingContracts);
+        contractError = hasOverlap ? 'OVERLAPPING_EMPLOYEE_CONTRACTS' : 'MULTIPLE_CONTRACTS_IN_PAYROLL_PERIOD';
+        const msg = hasOverlap
+          ? `Employee ${emp.firstName} ${emp.lastName} has overlapping contracts. Resolve the contract dates before processing payroll.`
+          : `Employee ${emp.firstName} ${emp.lastName} has multiple contracts within the selected payroll period. Create separate Payruns for each contract period.`;
+        empWarnings.push(msg);
       } else {
+        contract = matchingContracts[0];
         // Check if contract has salaryStructureId specified and if it matches
         if (
           contract.salaryStructureId &&
@@ -132,6 +145,14 @@ export class PayrunService {
               salaryStructureId: contract.salaryStructureId
             }
           : null,
+        contracts: matchingContracts.map((c) => ({
+          _id: c._id,
+          wage: c.wage,
+          startDate: c.startDate,
+          endDate: c.endDate,
+          status: c.status
+        })),
+        contractError,
         warnings: empWarnings,
         isEligible
       };
@@ -193,28 +214,52 @@ export class PayrunService {
 
     for (const emp of employees) {
       // Contract check
-      const contract = await Contract.findOne({
+      const matchingContracts = await Contract.find({
         employeeId: emp._id,
         status: 'Active',
         startDate: { $lte: validated.periodEnd },
         $or: [{ endDate: null }, { endDate: { $gte: validated.periodStart } }]
-      });
+      }).sort({ startDate: 1 });
 
-      if (!contract) {
+      if (matchingContracts.length === 0) {
         warnings.push({
           type: 'MISSING_CONTRACT',
           message: `Employee ${emp.firstName} ${emp.lastName} (${emp.employeeCode}) has no active contract for the period`,
           employeeId: emp._id as mongoose.Types.ObjectId
         });
-      } else if (
-        contract.salaryStructureId &&
-        contract.salaryStructureId.toString() !== validated.salaryStructureId.toString()
-      ) {
-        warnings.push({
-          type: 'STRUCTURE_MISMATCH',
-          message: `Employee ${emp.firstName} ${emp.lastName}'s contract structure differs from payrun structure`,
-          employeeId: emp._id as mongoose.Types.ObjectId
-        });
+      } else if (matchingContracts.length > 1) {
+        const hasOverlap = hasAnyOverlappingContracts(matchingContracts);
+        const code = hasOverlap ? 'OVERLAPPING_EMPLOYEE_CONTRACTS' : 'MULTIPLE_CONTRACTS_IN_PAYROLL_PERIOD';
+        const msg = hasOverlap
+          ? `Employee ${emp.firstName} ${emp.lastName} has overlapping contracts. Resolve the contract dates before processing payroll.`
+          : `Employee ${emp.firstName} ${emp.lastName} has multiple contracts within the selected payroll period. Create separate Payruns for each contract period.`;
+
+        const error: any = new Error(msg);
+        error.statusCode = 400;
+        error.code = code;
+        error.employeeId = emp._id;
+        error.contracts = matchingContracts.map((c) => ({
+          _id: c._id,
+          startDate: c.startDate,
+          endDate: c.endDate,
+          wage: c.wage,
+          status: c.status,
+          jobPosition: c.jobPosition,
+          salaryStructureId: c.salaryStructureId
+        }));
+        throw error;
+      } else {
+        const contract = matchingContracts[0];
+        if (
+          contract.salaryStructureId &&
+          contract.salaryStructureId.toString() !== validated.salaryStructureId.toString()
+        ) {
+          warnings.push({
+            type: 'STRUCTURE_MISMATCH',
+            message: `Employee ${emp.firstName} ${emp.lastName}'s contract structure differs from payrun structure`,
+            employeeId: emp._id as mongoose.Types.ObjectId
+          });
+        }
       }
 
       // Bank details check
@@ -365,6 +410,38 @@ export class PayrunService {
           throw error;
         }
         seenStr.add(empId.toString());
+
+        // Validate contract boundary for payrun period
+        const matchingContracts = await Contract.find({
+          employeeId: new mongoose.Types.ObjectId(empId),
+          status: 'Active',
+          startDate: { $lte: payrun.periodEnd },
+          $or: [{ endDate: null }, { endDate: { $gte: payrun.periodStart } }]
+        }).sort({ startDate: 1 });
+
+        if (matchingContracts.length > 1) {
+          const emp = await Employee.findById(empId);
+          const employeeName = emp ? `${emp.firstName} ${emp.lastName}`.trim() : empId.toString();
+          const hasOverlap = hasAnyOverlappingContracts(matchingContracts);
+          const code = hasOverlap ? 'OVERLAPPING_EMPLOYEE_CONTRACTS' : 'MULTIPLE_CONTRACTS_IN_PAYROLL_PERIOD';
+          const msg = hasOverlap
+            ? `Employee ${employeeName} has overlapping contracts. Resolve the contract dates before processing payroll.`
+            : `Employee ${employeeName} has multiple contracts within the selected payroll period. Create separate Payruns for each contract period.`;
+
+          const error: any = new Error(msg);
+          error.statusCode = 400;
+          error.code = code;
+          error.employeeId = empId;
+          error.contracts = matchingContracts.map((c) => ({
+            _id: c._id,
+            startDate: c.startDate,
+            endDate: c.endDate,
+            wage: c.wage,
+            status: c.status
+          }));
+          throw error;
+        }
+
         objectIds.push(new mongoose.Types.ObjectId(empId));
       }
       payrun.employeeIds = objectIds;

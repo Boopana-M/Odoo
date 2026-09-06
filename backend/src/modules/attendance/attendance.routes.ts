@@ -6,6 +6,10 @@ const router = Router();
 
 router.use(authenticate);
 
+// Employee Self-Service Attendance Routes (Employee role only)
+router.post('/check-in', (req, res, next) => attendanceController.checkIn(req, res, next));
+router.post('/check-out', (req, res, next) => attendanceController.checkOut(req, res, next));
+
 router.post('/', authorize('Admin', 'HR Manager', 'Employee'), (req, res, next) => attendanceController.create(req, res, next));
 router.get('/', authorize('Admin', 'HR Manager', 'HR Payroll User', 'HR Payroll Manager', 'Employee'), (req, res, next) => attendanceController.getAll(req, res, next));
 router.get('/employee/:employeeId', authorize('Admin', 'HR Manager', 'HR Payroll User', 'HR Payroll Manager', 'Employee'), (req, res, next) => attendanceController.getByEmployeeId(req, res, next));

@@ -16,6 +16,9 @@ export const errorHandler = (
   const statusCode = err.statusCode || err.status || 500;
   res.status(statusCode).json({
     status: 'error',
-    message: err.message || 'Internal Server Error'
+    message: err.message || 'Internal Server Error',
+    ...(err.code ? { code: err.code } : {}),
+    ...(err.employeeId ? { employeeId: err.employeeId } : {}),
+    ...(err.contracts ? { contracts: err.contracts } : {})
   });
 };

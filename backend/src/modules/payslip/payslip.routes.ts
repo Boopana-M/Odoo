@@ -6,10 +6,10 @@ const router = Router();
 
 router.use(authenticate);
 
-// List payslips (Admin, HR Payroll Manager, HR Payroll User, Employee - scoped to own in service)
+// List payslips (Admin, HR Manager, HR Payroll Manager, HR Payroll User, Employee - scoped to own in service)
 router.get(
   '/',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
   (req, res, next) => payslipController.getAll(req, res, next)
 );
 
@@ -23,35 +23,35 @@ router.post(
 // Get all payslips for a specific payrun
 router.get(
   '/payrun/:payrunId',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User'),
   (req, res, next) => payslipController.getByPayrun(req, res, next)
 );
 
 // Get all payslips for a specific employee (Employee ownership checked)
 router.get(
   '/employee/:employeeId',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
   verifyEmployeeOwnership('employeeId'),
   (req, res, next) => payslipController.getByEmployee(req, res, next)
 );
 
-// Get single payslip by ID (Admin, HR Payroll Manager, HR Payroll User, Employee - scoped in service)
+// Get single payslip by ID (Admin, HR Manager, HR Payroll Manager, HR Payroll User, Employee - scoped in service)
 router.get(
   '/:id',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
   (req, res, next) => payslipController.getById(req, res, next)
 );
 
-// Generate / Download Payslip PDF (Admin, HR Payroll Manager, HR Payroll User, Employee - scoped in service)
+// Generate / Download Payslip PDF (Admin, HR Manager, HR Payroll Manager, HR Payroll User, Employee - scoped in service)
 router.get(
   '/:id/pdf',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
   (req, res, next) => payslipController.generatePdf(req, res, next)
 );
 
 router.post(
   '/:id/pdf',
-  authorize('Admin', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
+  authorize('Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User', 'Employee'),
   (req, res, next) => payslipController.generatePdf(req, res, next)
 );
 

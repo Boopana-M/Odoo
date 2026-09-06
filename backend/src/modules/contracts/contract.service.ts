@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Contract, IContract, ContractStatus } from './contract.model';
 import { CreateContractInput, UpdateContractInput, validateContractData } from './contract.validation';
+import { hasAnyOverlappingContracts } from './contract.boundary';
 
 export interface ContractFilterQuery {
   employeeId?: string;
@@ -200,20 +201,49 @@ export class ContractService {
       throw error;
     }
 
-    const contract = await Contract.findOne({
+    const contracts = await Contract.find({
       employeeId: new mongoose.Types.ObjectId(employeeId),
       status: 'Active',
-      startDate: { $lte: periodStart },
+      startDate: { $lte: periodEnd },
       $or: [
         { endDate: null },
-        { endDate: { $gte: periodEnd } }
+        { endDate: { $gte: periodStart } }
       ]
     })
       .populate('employeeId', 'firstName lastName employeeCode email jobPosition')
       .populate('departmentId', 'name')
-      .sort({ startDate: -1 });
+      .sort({ startDate: 1 });
 
-    return contract;
+    if (contracts.length === 0) {
+      return null;
+    }
+
+    if (contracts.length > 1) {
+      const emp: any = contracts[0].employeeId;
+      const employeeName = emp && emp.firstName ? `${emp.firstName} ${emp.lastName}`.trim() : employeeId;
+      const hasOverlap = hasAnyOverlappingContracts(contracts);
+      const code = hasOverlap ? 'OVERLAPPING_EMPLOYEE_CONTRACTS' : 'MULTIPLE_CONTRACTS_IN_PAYROLL_PERIOD';
+      const message = hasOverlap
+        ? `Employee ${employeeName} has overlapping contracts. Resolve the contract dates before processing payroll.`
+        : `Employee ${employeeName} has multiple contracts within the selected payroll period. Create separate Payruns for each contract period.`;
+
+      const error: any = new Error(message);
+      error.statusCode = 400;
+      error.code = code;
+      error.employeeId = employeeId;
+      error.contracts = contracts.map((c) => ({
+        _id: c._id,
+        startDate: c.startDate,
+        endDate: c.endDate,
+        wage: c.wage,
+        status: c.status,
+        jobPosition: c.jobPosition,
+        salaryStructureId: c.salaryStructureId
+      }));
+      throw error;
+    }
+
+    return contracts[0];
   }
 }
 

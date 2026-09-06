@@ -225,8 +225,8 @@ export function Navbar() {
         {/* Live Notification Bell */}
         <NotificationBell />
 
-        {/* Attendance Check-in Widget */}
-        <AttendanceWidget />
+        {/* Attendance Check-in Widget (Employee only) */}
+        {isEmployeeOnly && <AttendanceWidget />}
 
         {/* User Profile Pill & Actions */}
         <div className="user-profile">
