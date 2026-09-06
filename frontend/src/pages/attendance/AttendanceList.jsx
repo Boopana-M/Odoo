@@ -8,8 +8,6 @@ import {
   Edit2,
   CheckCircle,
   AlertTriangle,
-  Play,
-  Square,
   Calendar,
   UserCheck
 } from 'lucide-react';
@@ -37,14 +35,6 @@ export function AttendanceList() {
   const [endDate, setEndDate] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  // Employee Self-Service Clock & Status
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [elapsed, setElapsed] = useState('00:00:00');
-  const [selfServiceLoading, setSelfServiceLoading] = useState(false);
-
-  // Active attendance record for today (Employee only)
-  const [activeTodayAttendance, setActiveTodayAttendance] = useState(null);
-
   // Create Modal (HR/Admin manual entry)
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newRecord, setNewRecord] = useState({
@@ -64,49 +54,6 @@ export function AttendanceList() {
     status: 'Present',
     correctionReason: ''
   });
-
-  // Keep clock running for live feedback
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Compute today's active attendance for employee
-  useEffect(() => {
-    if (isEmployeeOnly && attendances.length > 0) {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todayRecords = attendances.filter((att) => {
-        const attDate = att.date ? att.date.split('T')[0] : '';
-        return attDate === todayStr;
-      });
-      // Find open check-in or latest today record
-      const open = todayRecords.find((r) => !r.checkOut);
-      setActiveTodayAttendance(open || todayRecords[0] || null);
-    } else if (isEmployeeOnly && attendances.length === 0) {
-      setActiveTodayAttendance(null);
-    }
-  }, [isEmployeeOnly, attendances]);
-
-  // Elapsed timer for active check-in
-  useEffect(() => {
-    if (isEmployeeOnly && activeTodayAttendance?.checkIn && !activeTodayAttendance.checkOut) {
-      const checkInTime = new Date(activeTodayAttendance.checkIn).getTime();
-      const updateElapsed = () => {
-        const diff = Math.max(0, Date.now() - checkInTime);
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        setElapsed(
-          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-        );
-      };
-      updateElapsed();
-      const interval = setInterval(updateElapsed, 1000);
-      return () => clearInterval(interval);
-    } else {
-      setElapsed('00:00:00');
-    }
-  }, [isEmployeeOnly, activeTodayAttendance]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -134,33 +81,14 @@ export function AttendanceList() {
     fetchData();
   }, [selectedEmp, startDate, endDate, statusFilter, isEmployeeOnly]);
 
-  // Employee Self-Service: Check In
-  const handleEmployeeCheckIn = async () => {
-    setSelfServiceLoading(true);
-    try {
-      await attendanceApi.checkIn();
-      success('Checked in successfully!');
+  // Refresh attendance history table when check-in/out happens in top widget
+  useEffect(() => {
+    const handleAttendanceChanged = () => {
       fetchData();
-    } catch (err) {
-      error(err.message || 'Check-in failed');
-    } finally {
-      setSelfServiceLoading(false);
-    }
-  };
-
-  // Employee Self-Service: Check Out
-  const handleEmployeeCheckOut = async () => {
-    setSelfServiceLoading(true);
-    try {
-      await attendanceApi.checkOut();
-      success('Checked out successfully!');
-      fetchData();
-    } catch (err) {
-      error(err.message || 'Check-out failed');
-    } finally {
-      setSelfServiceLoading(false);
-    }
-  };
+    };
+    window.addEventListener('attendance-changed', handleAttendanceChanged);
+    return () => window.removeEventListener('attendance-changed', handleAttendanceChanged);
+  }, [selectedEmp, startDate, endDate, statusFilter, isEmployeeOnly]);
 
   // HR/Admin Manual Attendance Creation
   const handleCreate = async (e) => {
@@ -231,8 +159,6 @@ export function AttendanceList() {
     }
   };
 
-  const isCheckedIn = !!(activeTodayAttendance && !activeTodayAttendance.checkOut);
-
   return (
     <div>
       {/* Page Header */}
@@ -261,115 +187,7 @@ export function AttendanceList() {
         )}
       </div>
 
-      {/* EMPLOYEE ONLY: Prominent Self-Service Check-In / Check-Out Panel */}
-      {isEmployeeOnly && (
-        <div
-          className="card"
-          style={{
-            marginBottom: '1.5rem',
-            padding: '1.5rem',
-            background: isCheckedIn
-              ? 'linear-gradient(135deg, rgba(22, 163, 74, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%)'
-              : 'linear-gradient(135deg, rgba(113, 75, 103, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%)',
-            borderColor: isCheckedIn ? '#16a34a' : 'var(--border)',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1.5rem'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <div
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: '50%',
-                backgroundColor: isCheckedIn ? 'rgba(22, 163, 74, 0.2)' : 'rgba(255, 255, 255, 0.08)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: isCheckedIn ? '#4ade80' : 'var(--text-muted)'
-              }}
-            >
-              <Clock size={28} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {currentTime.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.2 }}>
-                {currentTime.toLocaleTimeString()}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem' }}>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    padding: '0.2rem 0.6rem',
-                    borderRadius: '999px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    backgroundColor: isCheckedIn ? 'rgba(34, 197, 94, 0.2)' : 'rgba(148, 163, 184, 0.2)',
-                    color: isCheckedIn ? '#4ade80' : '#94a3b8'
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      backgroundColor: isCheckedIn ? '#22c55e' : '#94a3b8'
-                    }}
-                  />
-                  {isCheckedIn ? 'CURRENTLY WORKING' : 'NOT CHECKED IN'}
-                </span>
-                {isCheckedIn && (
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    (Check-in: {new Date(activeTodayAttendance.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            {isCheckedIn && (
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Elapsed Time Today
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#4ade80', fontFamily: 'monospace' }}>
-                  {elapsed}
-                </div>
-              </div>
-            )}
-
-            {!isCheckedIn ? (
-              <button
-                type="button"
-                className="btn btn-success"
-                style={{ padding: '0.65rem 1.75rem', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                onClick={handleEmployeeCheckIn}
-                disabled={selfServiceLoading}
-              >
-                <Play size={18} /> Check In
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-danger"
-                style={{ padding: '0.65rem 1.75rem', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                onClick={handleEmployeeCheckOut}
-                disabled={selfServiceLoading}
-              >
-                <Square size={18} /> Check Out
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Filter Bar */}
       <div className="filter-bar">

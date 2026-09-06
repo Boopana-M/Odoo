@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, Play, Square, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Clock, Play, Square } from 'lucide-react';
 import { attendanceApi } from '../api/attendanceApi';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -12,6 +12,20 @@ export function AttendanceWidget() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [elapsed, setElapsed] = useState('00:00:00');
   const [loading, setLoading] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
 
   // Update clock every second
   useEffect(() => {
@@ -19,20 +33,15 @@ export function AttendanceWidget() {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch today's attendance for current user
+  // Fetch status using the reliable endpoint or fallback
   const fetchTodayStatus = async () => {
-    if (!isAuthenticated || !user?.employeeId) return;
+    if (!isAuthenticated || user?.role !== 'Employee') return;
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const res = await attendanceApi.getAll({
-        employeeId: user.employeeId,
-        startDate: todayStr,
-        endDate: todayStr
-      });
-      if (res?.data && res.data.length > 0) {
-        // Find one without checkout or the latest
-        const openRecord = res.data.find(r => !r.checkOut);
-        setActiveAttendance(openRecord || res.data[0]);
+      const res = await attendanceApi.getStatus();
+      if (res?.data?.data?.isCheckedIn && res?.data?.data?.attendance) {
+        setActiveAttendance(res.data.data.attendance);
+      } else if (res?.data?.isCheckedIn && res?.data?.attendance) {
+        setActiveAttendance(res.data.attendance);
       } else {
         setActiveAttendance(null);
       }
@@ -43,6 +52,15 @@ export function AttendanceWidget() {
 
   useEffect(() => {
     fetchTodayStatus();
+  }, [isAuthenticated, user]);
+
+  // Listen for global attendance changes
+  useEffect(() => {
+    const onAttendanceChanged = () => {
+      fetchTodayStatus();
+    };
+    window.addEventListener('attendance-changed', onAttendanceChanged);
+    return () => window.removeEventListener('attendance-changed', onAttendanceChanged);
   }, [isAuthenticated, user]);
 
   // Calculate elapsed time if checked in
@@ -70,9 +88,11 @@ export function AttendanceWidget() {
     setLoading(true);
     try {
       const res = await attendanceApi.checkIn();
-      setActiveAttendance(res.data);
+      const newAtt = res.data?.data || res.data;
+      setActiveAttendance(newAtt);
       success('Checked in successfully!');
       setIsOpen(false);
+      window.dispatchEvent(new Event('attendance-changed'));
     } catch (err) {
       error(err.message || 'Check-in failed');
     } finally {
@@ -83,10 +103,12 @@ export function AttendanceWidget() {
   const handleCheckOut = async () => {
     setLoading(true);
     try {
-      const res = await attendanceApi.checkOut();
-      setActiveAttendance(res.data);
+      await attendanceApi.checkOut();
+      setActiveAttendance(null);
+      setElapsed('00:00:00');
       success('Checked out successfully!');
       setIsOpen(false);
+      window.dispatchEvent(new Event('attendance-changed'));
     } catch (err) {
       error(err.message || 'Check-out failed');
     } finally {
@@ -99,7 +121,7 @@ export function AttendanceWidget() {
   const isCheckedIn = !!(activeAttendance && !activeAttendance.checkOut);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div ref={dropdownRef} style={{ position: 'relative' }}>
       <button
         type="button"
         className="nav-link"
@@ -112,7 +134,8 @@ export function AttendanceWidget() {
           borderColor: isCheckedIn ? '#16a34a' : 'transparent',
           color: isCheckedIn ? '#4ade80' : '#cbd5e1',
           padding: '0.4rem 0.75rem',
-          borderRadius: 'var(--radius-sm)'
+          borderRadius: 'var(--radius-sm)',
+          cursor: 'pointer'
         }}
         title="Quick Attendance"
       >
@@ -168,8 +191,9 @@ export function AttendanceWidget() {
 
           {!isCheckedIn ? (
             <button
+              type="button"
               className="btn btn-success"
-              style={{ width: '100%' }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               onClick={handleCheckIn}
               disabled={loading || !user?.employeeId}
             >
@@ -177,8 +201,9 @@ export function AttendanceWidget() {
             </button>
           ) : (
             <button
+              type="button"
               className="btn btn-danger"
-              style={{ width: '100%' }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               onClick={handleCheckOut}
               disabled={loading}
             >

@@ -143,6 +143,40 @@ export class AttendanceService {
       .populate('correctedBy', 'name email role')) as IAttendance;
   }
 
+  /**
+   * Get active attendance / check-in status for the current employee.
+   */
+  async getStatus(currentUser?: AuthUserPayload): Promise<{ isCheckedIn: boolean; attendance: IAttendance | null }> {
+    if (!currentUser || currentUser.role !== 'Employee') {
+      return { isCheckedIn: false, attendance: null };
+    }
+
+    let employeeId = currentUser.employeeId;
+    if (!employeeId) {
+      const dbUser = await User.findById(currentUser.userId);
+      if (dbUser?.employeeId) {
+        employeeId = dbUser.employeeId.toString();
+      }
+    }
+
+    if (!employeeId) {
+      return { isCheckedIn: false, attendance: null };
+    }
+
+    const openRecord = await Attendance.findOne({
+      employeeId: new mongoose.Types.ObjectId(employeeId),
+      checkOut: null
+    })
+      .sort({ checkIn: -1 })
+      .populate('employeeId', 'firstName lastName employeeCode departmentId jobPosition')
+      .populate('correctedBy', 'name email role');
+
+    return {
+      isCheckedIn: !!openRecord,
+      attendance: (openRecord as IAttendance) || null
+    };
+  }
+
   async createAttendance(
     input: CreateAttendanceInput,
     currentUser?: AuthUserPayload

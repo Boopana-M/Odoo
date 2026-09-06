@@ -44,6 +44,18 @@ export class AttendanceController {
     }
   }
 
+  async getStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await attendanceService.getStatus(req.user);
+      res.status(200).json({
+        status: 'success',
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const attendance = await attendanceService.createAttendance(req.body, req.user);
